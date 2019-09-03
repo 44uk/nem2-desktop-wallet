@@ -70,6 +70,10 @@ export class MonitorPanelTs extends Vue {
         return this.activeAccount.currentXem
     }
 
+    get currentXEM1() {
+        return this.activeAccount.currentXEM1
+    }
+
     get currentXEM2() {
         return this.activeAccount.currentXEM2
     }
@@ -78,9 +82,7 @@ export class MonitorPanelTs extends Vue {
         return [this.currentXEM1, this.currentXEM2]
     }
 
-    get currentXEM1() {
-        return this.activeAccount.currentXEM1
-    }
+
 
     get namespaceList() {
         return this.activeAccount.namespace
