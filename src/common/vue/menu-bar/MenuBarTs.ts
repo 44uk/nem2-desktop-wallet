@@ -81,12 +81,12 @@ export class MenuBarTs extends Vue {
     }
 
     get currentWalletAddress() {
-      if(!this.wallet) return false
-      return this.activeAccount.wallet.address
+        if (!this.wallet) return false
+        return this.activeAccount.wallet.address
     }
 
     set currentWalletAddress(newActiveWalletAddress) {
-      AppWallet.switchWallet(newActiveWalletAddress, this.walletList, this.$store)
+        AppWallet.switchWallet(newActiveWalletAddress, this.walletList, this.$store)
     }
 
     closeWindow() {
