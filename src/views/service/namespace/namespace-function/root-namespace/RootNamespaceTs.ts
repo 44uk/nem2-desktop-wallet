@@ -17,7 +17,7 @@ import {mapState} from "vuex"
         ...mapState({
             activeAccount: 'account',
             app:'app'
-        })
+        }) 
     }
 })
 export class RootNamespaceTs extends Vue {
@@ -254,6 +254,7 @@ export class RootNamespaceTs extends Vue {
         this.showCheckPWDialog = true
     }
 
+    // @TODO: target blockTime is hardcoded
     changeXEMRentFee() {
         const duration = Number(this.form.duration)
         if (Number.isNaN(duration)) {

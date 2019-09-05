@@ -6,15 +6,17 @@
 
 <script lang="ts">
     import 'animate.css'
-    import {isWindows} from "@/config/index.ts"
+    import {isWindows, Message} from "@/config/index.ts"
     import {localRead, localSave} from '@/core/utils/utils.ts'
     import {AppWallet} from '@/core/utils/wallet.ts'
-    import {Listener} from "nem2-sdk"
+    import {Listener, NamespaceHttp, NamespaceId, Address} from "nem2-sdk"
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
     import {ListenerApiRxjs} from '@/core/api/ListenerApiRxjs.ts'
     import {Component, Vue} from 'vue-property-decorator'
     import {mapState} from 'vuex'
+    import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
+    import {Listeners} from '@/core/services/listeners'
 
     @Component({
         computed: {
@@ -25,6 +27,9 @@
         isWindows = isWindows
         activeAccount: any
         app: any
+        unconfirmedTxListener = null
+        confirmedTxListener = null
+        txStatusListener = null
 
         get node(): string {
             return this.activeAccount.node
@@ -50,23 +55,83 @@
             return this.app.chainStatus.currentBlockInfo
         }
 
-        // chainStatus: {
-        //     currentHeight: 0,
-        //     currentGenerateTime: 12,
-        //     numTransactions: 0,
-        //     currentBlockInfo: {},
-        //     preBlockInfo: {},
-        //     signerPublicKey: '',
-        //     nodeAmount: 4
-        // }
-        initApp() {
+        get currentNode() {
+            return this.activeAccount.node
+        }
+
+        get errorTxList() { return this.activeAccount.errorTx }
+        get confirmedTxList() { return this.activeAccount.ConfirmedTx }
+        set confirmedTxList(tx) { this.$store.commit('SET_CONFIRMED_TX', tx) }
+        get unconfirmedTxList() { return this.activeAccount.UnconfirmedTx }
+        set unconfirmedTxList(tx) { this.$store.commit('SET_UNCONFIRMED_TX', tx) }
+
+        // App init
+        // Endpoint change
+        // SET_IS_NODE_HEALTHY set to false
+        async getNetworkGenerationHash(): Promise<void> {
+            const {currentNode} = this
+            try {
+                const block = await new BlockApiRxjs().getBlockByHeight(currentNode, 1).toPromise()
+                this.$store.commit('SET_IS_NODE_HEALTHY', true)
+                this.$Notice.success({
+                    title: this.$t(Message.NODE_CONNECTION_SUCCEEDED) + ''
+                })
+                this.$store.commit('SET_GENERATION_HASH', block.generationHash)
+            } catch (error) {
+                console.error(error)
+                this.$Notice.error({
+                    title: this.$t(Message.NODE_CONNECTION_ERROR) + ''
+                })
+                this.$store.commit('SET_IS_NODE_HEALTHY', false)
+            }
+        }
+
+        // App init
+        // Endpoint change
+        // SET_IS_NODE_HEALTHY set to false
+        async getNetworkInfo(): Promise<void> {
+            const {currentNode} = this
+            try {
+                const block: any = await new BlockApiRxjs().getBlockchainHeight(currentNode).toPromise()
+                this.$store.commit('SET_CHAIN_STATUS', {
+                    numTransactions: block.numTransactions ? block.numTransactions : 0,
+                    signerPublicKey: block.signer.publicKey,
+                    currentHeight: block.height.compact(),
+                    currentBlockInfo: block,
+                    currentGenerateTime: 12
+                })
+            } catch (error) {
+                console.error(error)
+                this.$store.commit('SET_IS_NODE_HEALTHY', false)
+            }
+        }
+
+        // SET_GENERATION_HASH change
+        async getNetworkMosaics(): Promise<void> {
+            const {currentNode} = this
+            // @TODO: nem.xem should be an app constant
+            const mainMosaicName = 'nem.xem'
+            try {
+                const mosaic = await new NamespaceHttp(currentNode)
+                  .getLinkedMosaicId(new NamespaceId(mainMosaicName))
+                  .toPromise()
+
+                // @TODO: check wether !mosaic works
+                if (!mosaic) {
+                    throw new Error(`${mainMosaicName} was not found`)
+                    this.$store.commit('SET_CURRENT_XEM_1', mosaic.toHex())
+                }  
+            } catch (error) {
+                console.error(error)
+                this.$store.commit('SET_IS_NODE_HEALTHY', false)
+            }
+        }
+
+
+        async setWalletsBalancesAndMultisigStatus() {
             const walletListFromStorage: any = localRead('wallets') !== '' ? JSON.parse(localRead('wallets')) : false
             if (!walletListFromStorage || !walletListFromStorage.length) return
             AppWallet.switchWallet(walletListFromStorage[0].address, walletListFromStorage, this.$store)
-            this.setWalletsBalancesAndMultisigStatus(walletListFromStorage)
-        }
-
-        async setWalletsBalancesAndMultisigStatus(walletListFromStorage) {
             const networkCurrencies = [this.currentXEM1, this.currentXEM2]
             try {
                 const balances = await Promise.all(
@@ -102,26 +167,37 @@
             }
         }
 
-        chainListner() {
-            if (!this.node) {
-                return
-            }
-            const {currentBlockInfo, preBlockInfo} = this
-            const node = this.node.replace('http', 'ws')
-            const listener = new Listener(node, WebSocket)
-            new ListenerApiRxjs().newBlock(listener, currentBlockInfo, preBlockInfo, this.setChainStatus)
-        }
 
-        setChainStatus(chainStatus) {
-            this.$store.commit('SET_CHAIN_STATUS', chainStatus)
-        }
 
         mounted() {
             this.$Notice.config({
                 duration: 4,
             })
-            this.initApp()
-            this.chainListner()
+
+            this.$store.subscribe((mutation, state) => {
+              switch(mutation.type) {
+                  /**
+                   * On Wallet Change
+                   */
+                  case 'SET_WALLET':
+                    const {wallet} = state.account;
+                    console.log(`SET_WALLET to ${wallet.address}`);
+
+                    if(!wallet.address) {
+                        // No wallet available
+                        return
+                    }
+                    break;
+
+                  /**
+                   * On Wallet Change
+                   */
+                  case 'SET_NODE':
+                    break;
+              }
+            })
+
+            this.setWalletsBalancesAndMultisigStatus()
         }
 
         created() {

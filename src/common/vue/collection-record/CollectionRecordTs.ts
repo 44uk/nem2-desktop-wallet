@@ -214,13 +214,15 @@ export class CollectionRecordTs extends Vue {
         })
     }
 
-    initData() {
+    // @TODO: the current month should probably be set at app creation to the store
+    // And defaulted from the store in here
+    setCurrentMonth() {
         this.currentMonth = (new Date()).getFullYear() + '-' + ((new Date()).getMonth() + 1)
     }
 
     @Watch('getWallet.address')
     onGetWalletChange() {
-        this.initData()
+        this.setCurrentMonth()
         this.getConfirmedTransactions()
     }
 
@@ -262,7 +264,7 @@ export class CollectionRecordTs extends Vue {
     }
 
     created() {
-        this.initData()
+        this.setCurrentMonth()
         this.getConfirmedTransactions()
         this.getUnConfirmedTransactions()
     }

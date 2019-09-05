@@ -1,10 +1,9 @@
 import routers from '@/router/routers.ts'
 import {Message, isWindows, languageList, localesMap, nodeList} from "@/config/index.ts"
 import {AppWallet} from '@/core/utils/wallet'
-import {ListenerApiRxjs} from "@/core/api/ListenerApiRxjs.ts"
 import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
 import monitorSeleted from '@/common/img/window/windowSelected.png'
-import {Address, Listener, NamespaceHttp, NamespaceId} from "nem2-sdk"
+import {NamespaceHttp, NamespaceId} from "nem2-sdk"
 import monitorUnselected from '@/common/img/window/windowUnselected.png'
 import {localSave} from "@/core/utils/utils.ts"
 import {Component, Vue, Watch} from 'vue-property-decorator'
@@ -62,18 +61,6 @@ export class MenuBarTs extends Vue {
         return this.activeAccount.node
     }
 
-    get UnconfirmedTxList() {
-        return this.activeAccount.UnconfirmedTx
-    }
-
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
-    get errorTxList() {
-        return this.activeAccount.errorTx
-    }
-
     get currentNode() {
         return this.activeAccount.node
     }
@@ -82,25 +69,11 @@ export class MenuBarTs extends Vue {
         return this.$i18n.locale
     }
 
-    get confirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
-    get unconfirmedTxList() {
-        return this.activeAccount.UnconfirmedTx
-    }
-
-    set confirmedTxList(confirmedTx) {
-        this.$store.commit('SET_CONFIRMED_TX', confirmedTx)
-    }
-
     set isNodeHealthy(isNodeHealthy) {
         this.$store.commit('SET_IS_NODE_HEALTHY', isNodeHealthy)
     }
 
-    set unconfirmedTxList(unconfirmedTx) {
-        this.$store.commit('SET_UNCONFIRMED_TX', unconfirmedTx)
-    }
+
 
     set language(lang) {
         this.$i18n.locale = lang
@@ -181,118 +154,7 @@ export class MenuBarTs extends Vue {
         })
     }
 
-    unconfirmedListener() {
-        if (!this.wallet.address) return
-        const node = this.node.replace('http', 'ws')
-        this.unconfirmedTxListener && this.unconfirmedTxListener.close()
-        this.unconfirmedTxListener = new Listener(node, WebSocket)
-        new ListenerApiRxjs().listenerUnconfirmed(this.unconfirmedTxListener, Address.createFromRawAddress(this.wallet.address), this.disposeUnconfirmed)
-    }
-
-    confirmedListener() {
-        if (!this.wallet.address) return
-        const node = this.node.replace('http', 'ws')
-        this.confirmedTxListener && this.confirmedTxListener.close()
-        this.confirmedTxListener = new Listener(node, WebSocket)
-        new ListenerApiRxjs().listenerConfirmed(this.confirmedTxListener,
-          Address.createFromRawAddress(this.wallet.address), this.disposeConfirmed)
-    }
-
-    txErrorListener() {
-        if (!this.wallet.address) return
-        const node = this.node.replace('http', 'ws')
-        this.txStatusListener && this.txStatusListener.close()
-        this.txStatusListener = new Listener(node, WebSocket)
-        new ListenerApiRxjs().listenerTxStatus(this.txStatusListener, Address.createFromRawAddress(this.wallet.address), this.disposeTxStatus)
-    }
-
-    disposeUnconfirmed(transaction) {
-        let list = this.unconfirmedTxList
-        if (!list.includes(transaction.transactionInfo.hash)) {
-            list.push(transaction.transactionInfo.hash)
-            this.unconfirmedTxList = list
-            this.$Notice.success({
-                title: this.$t('Transaction_sending').toString(),
-                duration: 20,
-            })
-        }
-    }
-
-    disposeConfirmed(transaction) {
-        let list = this.confirmedTxList
-        let unList = this.unconfirmedTxList
-        if (!list.includes(transaction.transactionInfo.hash)) {
-            list.push(transaction.transactionInfo.hash)
-            if (unList.includes(transaction.transactionInfo.hash)) {
-                unList.splice(unList.indexOf(transaction.transactionInfo.hash), 1)
-            }
-            this.confirmedTxList = list
-            this.unconfirmedTxList = unList
-            this.$Notice.destroy()
-            this.$Notice.success({
-                title: this.$t('Transaction_Reception').toString(),
-                duration: 4,
-            })
-        }
-    }
-
-
-    disposeTxStatus(transaction) {
-        let list = this.errorTxList
-        if (!list.includes(transaction.hash)) {
-            list.push(transaction.hash)
-            this.$store.commit('SET_ERROR_TEXT', list)
-            this.$Notice.destroy()
-            this.$Notice.error({
-                title: transaction.status.split('_').join(' '),
-                duration: 10,
-            })
-        }
-    }
-
-// languageList
-
-    @Watch('currentNode')
-    onCurrentNode() {
-        const {currentNode} = this
-        const that = this
-        const linkedMosaic = new NamespaceHttp(currentNode).getLinkedMosaicId(new NamespaceId('nem.xem'))
-        linkedMosaic.subscribe((mosaic) => {
-            this.$store.commit('SET_CURRENT_XEM_1', mosaic.toHex())
-        })
-        that.isNodeHealthy = false
-        this.unconfirmedListener()
-        this.confirmedListener()
-        this.txErrorListener()
-
-        that.$Notice.destroy()
-        that.$Notice.error({
-            title: that.$t(Message.NODE_CONNECTION_ERROR) + ''
-        })
-        new BlockApiRxjs().getBlockchainHeight(currentNode).subscribe((info) => {
-            that.isNodeHealthy = true
-            that.getGenerationHash(currentNode)
-            that.$Notice.destroy()
-            that.$Notice.success({
-                title: that.$t(Message.NODE_CONNECTION_SUCCEEDED) + ''
-            })
-        }, () => {
-            that.isNodeHealthy = false
-        })
-    }
-
-    @Watch('wallet.address')
-    onGetWalletChange() {
-        this.unconfirmedListener()
-        this.confirmedListener()
-        this.txErrorListener()
-    }
-
     created() {
         if (isWindows) windowSizeChange()
-        this.onCurrentNode()
-        this.unconfirmedListener()
-        this.confirmedListener()
-        this.txErrorListener()
     }
 }

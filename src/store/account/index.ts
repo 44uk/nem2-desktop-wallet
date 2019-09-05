@@ -3,6 +3,7 @@ import {nodeConfig} from "@/config/index.ts"
 
 declare interface account {
     node: string,
+    // @TODO: the currentXem should be renamed
     currentXem: string,
     currentXEM1: string,
     currentXEM2: string,
@@ -17,7 +18,6 @@ declare interface account {
     generationHash: string,
     addresAliasMap: any,
     xemDivisibility: number
-
 }
 
 export default {

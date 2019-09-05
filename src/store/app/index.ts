@@ -7,10 +7,8 @@ declare interface appInfo {
     isNodeHealthy: boolean,
     chainStatus: {
         currentHeight: number,
-        currentGenerateTime: number,
         numTransactions: number,
         currentBlockInfo: any,
-        preBlockInfo?: any,
         signerPublicKey?: string,
         nodeAmount?: number
     }
@@ -27,10 +25,8 @@ export default {
         mnemonic: '',
         chainStatus: {
             currentHeight: 0,
-            currentGenerateTime: 12,
             numTransactions: 0,
             currentBlockInfo: {},
-            preBlockInfo: {},
             signerPublicKey: '',
             nodeAmount: 4
         }
@@ -57,12 +53,10 @@ export default {
         },
 
         SET_CHAIN_STATUS(state: appInfo, chainStatus: any) {
-            const {currentHeight, currentGenerateTime, numTransactions, currentBlockInfo, preBlockInfo, signerPublicKey, nodeAmount} = chainStatus
+            const {currentHeight, numTransactions, currentBlockInfo, signerPublicKey, nodeAmount} = chainStatus
             state.chainStatus.currentHeight = currentHeight ? currentHeight : state.chainStatus.currentHeight
-            state.chainStatus.currentGenerateTime = currentGenerateTime ? currentGenerateTime : state.chainStatus.currentGenerateTime
             state.chainStatus.numTransactions = numTransactions ? numTransactions : state.chainStatus.numTransactions
             state.chainStatus.currentBlockInfo = currentBlockInfo ? currentBlockInfo : state.chainStatus.currentBlockInfo
-            state.chainStatus.preBlockInfo = preBlockInfo ? preBlockInfo : state.chainStatus.preBlockInfo
             state.chainStatus.signerPublicKey = signerPublicKey ? signerPublicKey : state.chainStatus.signerPublicKey
             state.chainStatus.nodeAmount = nodeAmount ? nodeAmount : state.chainStatus.nodeAmount
         },

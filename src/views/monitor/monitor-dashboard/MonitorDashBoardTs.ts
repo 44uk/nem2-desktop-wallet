@@ -124,26 +124,6 @@ export class MonitorDashBoardTs extends Vue {
         this.changePage(1)
     }
 
-    getPointInfo() {
-        const that = this
-        const {node} = this
-        new BlockApiRxjs().getBlockchainHeight(node).subscribe((res) => {
-            const height = Number.parseInt(res.toHex(), 16)
-            that.$store.commit('SET_CHAIN_STATUS', {currentHeight: height})
-            new BlockApiRxjs().getBlockByHeight(node, height).subscribe((block) => {
-                const chainStatus = {
-                    numTransactions: block.numTransactions ? block.numTransactions : 0,
-                    signerPublicKey: block.signer.publicKey,
-                    currentHeight: block.height.compact(),
-                    currentBlockInfo: block,
-                    currentGenerateTime: 12
-                }
-                that.$store.commit('SET_CHAIN_STATUS', chainStatus)
-            })
-        })
-    }
-
-
     refreshTransferTransactionList() {
         const that = this
         let {accountPublicKey, node} = this
@@ -217,7 +197,6 @@ export class MonitorDashBoardTs extends Vue {
         this.refreshReceiptList()
         this.refreshTransferTransactionList()
         this.getMarketOpenPrice()
-        this.getPointInfo()
     }
 
     @Watch('ConfirmedTxList')
@@ -254,6 +233,5 @@ export class MonitorDashBoardTs extends Vue {
         this.getMarketOpenPrice()
         this.refreshTransferTransactionList()
         this.refreshReceiptList()
-        this.getPointInfo()
     }
 }

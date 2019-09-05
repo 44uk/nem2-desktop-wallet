@@ -59,23 +59,17 @@ export class ListenerApiRxjs {
     }
 
 
-    newBlock(listener: Listener, currentBlockInfo, preBlockInfo, callback) {
+    newBlock(listener: Listener, callback) {
         return observableFrom(listener.open().then(() => {
                 listener
                     .newBlock()
                     .subscribe(
                         (block) => {
                             const chainStatus = {
-                                preBlockInfo: currentBlockInfo,
                                 numTransactions: block.numTransactions ? block.numTransactions : 0,
                                 signerPublicKey: block.signer.publicKey,
                                 currentHeight: block.height.compact(),
                                 currentBlockInfo: block,
-                                currentGenerateTime: 12
-                            }
-                            if (preBlockInfo.timestamp) {
-                                let currentGenerateTime = (block.timestamp.compact() - preBlockInfo.timestamp.compact()) / 1000    //time
-                                chainStatus.currentGenerateTime = Number(currentGenerateTime.toFixed(0))
                             }
                             callback(chainStatus)
                         },
