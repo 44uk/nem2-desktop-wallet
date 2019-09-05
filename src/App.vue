@@ -16,7 +16,7 @@
     import {Component, Vue} from 'vue-property-decorator'
     import {mapState} from 'vuex'
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
-    import {Listeners} from '@/core/services/listeners'
+    import {ChainListeners} from '@/core/services/listeners'
 
     @Component({
         computed: {
@@ -30,6 +30,7 @@
         unconfirmedTxListener = null
         confirmedTxListener = null
         txStatusListener = null
+        chainListeners: ChainListeners = null
 
         get node(): string {
             return this.activeAccount.node
@@ -59,11 +60,42 @@
             return this.activeAccount.node
         }
 
-        get errorTxList() { return this.activeAccount.errorTx }
-        get confirmedTxList() { return this.activeAccount.ConfirmedTx }
-        set confirmedTxList(tx) { this.$store.commit('SET_CONFIRMED_TX', tx) }
-        get unconfirmedTxList() { return this.activeAccount.UnconfirmedTx }
-        set unconfirmedTxList(tx) { this.$store.commit('SET_UNCONFIRMED_TX', tx) }
+/*
+    ----------------------
+    Confirmed Tx change
+    ----------------------
+
+    // MonitorDashboard
+    this.allTransactionsList = []
+    this.refreshReceiptList()
+    this.refreshTransferTransactionList()
+
+    // MosaicList
+    this.initMosaic()
+
+    // WalletPanel
+    this.getMyNamespaces()
+
+    // NamespaceTs
+    this.getMyNamespaces()
+
+    // CollectionRecord
+    this.isLoadingTransactionRecord = true
+    this.getConfirmedTransactions()
+
+    // MonitorPanel
+    this.initMosaic()
+    new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
+    this.getAccountsName()
+    this.getMyNamespaces()
+
+    ----------------------
+    Unconfirmed Tx change
+    ----------------------
+    // Collection record
+    this.isLoadingTransactionRecord = true
+    this.getUnConfirmedTransactions()
+*/
 
         // App init
         // Endpoint change
@@ -173,7 +205,7 @@
             this.$Notice.config({
                 duration: 4,
             })
-
+            
             this.$store.subscribe((mutation, state) => {
               switch(mutation.type) {
                   /**
@@ -187,16 +219,34 @@
                         // No wallet available
                         return
                     }
+
+
+                    if (!this.chainListeners) {
+                        this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
+                        this.chainListeners.start()
+                    } else {
+                        this.chainListeners.switchAddress(this.wallet.address)
+                    }
+
                     break;
 
                   /**
-                   * On Wallet Change
+                   * On Endpoint Change
                    */
                   case 'SET_NODE':
+                        if (!this.chainListeners) {
+                            this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
+                            this.chainListeners.start()
+                        } else {
+                            this.chainListeners.switchEndpoint(this.node)
+                        }
                     break;
+                
+                    
               }
             })
 
+            // @TODO: hook to onLogin event
             this.setWalletsBalancesAndMultisigStatus()
         }
 

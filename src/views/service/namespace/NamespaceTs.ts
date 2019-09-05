@@ -29,10 +29,6 @@ export class NamespaceTs extends Vue {
         return this.activeAccount.wallet
     }
 
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     switchButton(index) {
         let list = this.buttonList
         list = list.map((item) => {
@@ -46,11 +42,6 @@ export class NamespaceTs extends Vue {
     async getMyNamespaces() {
         const list = await getNamespaces(this.getWallet.address, this.node)
         this.$store.commit('SET_NAMESPACE', list)
-    }
-
-    @Watch('ConfirmedTxList')
-    onConfirmedTxChange() {
-        this.getMyNamespaces()
     }
 
     @Watch('getWallet')

@@ -31,8 +31,6 @@ export class MenuBarTs extends Vue {
     monitorSeleted = monitorSeleted
     monitorUnselected = monitorUnselected
     accountAddress = ''
-    unconfirmedTxListener = null
-    confirmedTxListener = null
     txStatusListener = null
     languageList = languageList
     localesMap = localesMap

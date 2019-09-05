@@ -61,10 +61,6 @@ export class MosaicListTs extends Vue {
         return this.activeAccount.wallet
     }
 
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     get nowBlockHeihgt() {
         return this.app.chainStatus.currentHeight
     }
@@ -171,11 +167,6 @@ export class MosaicListTs extends Vue {
 
     @Watch('getWallet.address')
     onGetWalletChange() {
-        this.initMosaic()
-    }
-
-    @Watch('ConfirmedTxList')
-    onConfirmedTxChange() {
         this.initMosaic()
     }
 

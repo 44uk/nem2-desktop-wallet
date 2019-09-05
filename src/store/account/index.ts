@@ -11,8 +11,6 @@ declare interface account {
     wallet: any,
     mosaic: any[],
     namespace: any[],
-    UnconfirmedTx: any,
-    ConfirmedTx: any,
     errorTx: Array<any>,
     mosaicMap: any,
     generationHash: string,
@@ -31,8 +29,6 @@ export default {
         wallet: {},
         mosaic: [],
         namespace: [],
-        UnconfirmedTx: [],
-        ConfirmedTx: [],
         errorTx: [],
         mosaicMap: {},
         addresAliasMap: {},
@@ -82,12 +78,6 @@ export default {
         },
         SET_ADDRESS_ALIAS_MAP(state: account, addresAliasMap: any): void {
             state.addresAliasMap = addresAliasMap
-        },
-        SET_UNCONFIRMED_TX(state: account, UnconfirmedTx: any): void {
-            state.UnconfirmedTx = UnconfirmedTx
-        },
-        SET_CONFIRMED_TX(state: account, ConfirmedTx: any): void {
-            state.ConfirmedTx = ConfirmedTx
         },
         SET_XEM_DIVISIBILITY(state: account, xemDivisibility: number) {
             state.xemDivisibility = xemDivisibility

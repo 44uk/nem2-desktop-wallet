@@ -46,10 +46,6 @@ export class MonitorPanelTs extends Vue {
         return this.activeAccount.wallet.balance
     }
 
-    get confirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     get accountAddress() {
         return this.activeAccount.wallet.address
     }
@@ -349,14 +345,6 @@ export class MonitorPanelTs extends Vue {
         new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
         this.getAccountsName()
         this.getMarketOpenPrice()
-        this.getMyNamespaces()
-    }
-
-    @Watch('confirmedTxList')
-    onConfirmedTxChange() {
-        this.initMosaic()
-        new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
-        this.getAccountsName()
         this.getMyNamespaces()
     }
 

@@ -56,10 +56,6 @@ export class MonitorDashBoardTs extends Vue {
         return this.activeAccount.wallet.address
     }
 
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     get currentXem() {
         return this.activeAccount.currentXem
     }
@@ -252,12 +248,6 @@ export class MonitorDashBoardTs extends Vue {
         this.getMarketOpenPrice()
     }
 
-    @Watch('ConfirmedTxList')
-    onConfirmedTxChange() {
-        this.allTransactionsList = []
-        this.refreshReceiptList()
-        this.refreshTransferTransactionList()
-    }
 
     @Watch('allTransactionsList')
     onAllTransacrionListChange() {

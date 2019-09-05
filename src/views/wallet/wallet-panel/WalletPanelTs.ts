@@ -43,10 +43,6 @@ export class WalletPanelTs extends Vue {
         return this.activeAccount.node
     }
 
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     toCreate() {
         this.tabIndex = 0
         this.toMethod = true
@@ -109,11 +105,6 @@ export class WalletPanelTs extends Vue {
         }
         const list = await getNamespaces(this.wallet.address, this.node)
         this.$store.commit('SET_NAMESPACE', list)
-    }
-
-    @Watch('ConfirmedTxList')
-    onConfirmedTxChange() {
-        this.getMyNamespaces()
     }
 
     @Watch('wallet')

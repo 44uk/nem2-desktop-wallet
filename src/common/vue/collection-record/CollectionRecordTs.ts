@@ -49,14 +49,6 @@ export class CollectionRecordTs extends Vue {
         return this.activeAccount.wallet
     }
 
-    get UnconfirmedTxList() {
-        return this.activeAccount.UnconfirmedTx
-    }
-
-    get ConfirmedTxList() {
-        return this.activeAccount.ConfirmedTx
-    }
-
     get currentXEM1() {
         return this.activeAccount.currentXEM1
     }
@@ -285,18 +277,6 @@ export class CollectionRecordTs extends Vue {
     onGetWalletChange() {
         this.setCurrentMonth()
         this.getConfirmedTransactions()
-    }
-
-    @Watch('ConfirmedTxList')
-    onConfirmedTxChange() {
-        this.isLoadingTransactionRecord = true
-        this.getConfirmedTransactions()
-    }
-
-    @Watch('UnconfirmedTxList')
-    onUnconfirmedTxChange() {
-        this.isLoadingTransactionRecord = true
-        this.getUnConfirmedTransactions()
     }
 
     // month filter
