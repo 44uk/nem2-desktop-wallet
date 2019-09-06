@@ -13,8 +13,8 @@ declare interface account {
     namespace: any[],
     errorTx: Array<any>,
     mosaicMap: any,
-    generationHash: string,
     addresAliasMap: any,
+    generationHash: string,
     xemDivisibility: number
     transactionList: any,
 }
@@ -26,7 +26,6 @@ export default {
         currentXEM1: nodeConfig.currentXEM1,
         currentXEM2: nodeConfig.currentXEM2,
         account: {},
-        xemDivisibility: 6,
         wallet: {},
         mosaic: [],
         namespace: [],
@@ -34,6 +33,7 @@ export default {
         mosaicMap: {},
         addresAliasMap: {},
         generationHash: '',
+        xemDivisibility: 6,
         transactionList: {
             transferTransactionList: [],
             receiptList: [],

@@ -120,8 +120,7 @@ export class MonitorPanelTs extends Vue {
         this.$store.commit('SET_MOSAIC_MAP', updatedMap)
     }
 
-
-
+    // @TODO: move to formatTransaction
     formatNumber(number) {
         return formatNumber(number)
     }

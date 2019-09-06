@@ -221,7 +221,9 @@
                 return item.id
             })
             const mosaicInfoList = await getMosaicInfoList(node, mosaicList)
-            new NamespaceHttp(node).getLinkedMosaicId(new NamespaceId(nodeConfig.currentXem)).subscribe((mosaicId) => {
+            new NamespaceHttp(node)
+                .getLinkedMosaicId(new NamespaceId(nodeConfig.currentXem))
+                .subscribe((mosaicId) => {
                 // @TODO: move to a separate function, On Generation Hash change
                 // set current xem hex
                 currentXEM1 = mosaicId.toHex()
@@ -361,8 +363,6 @@
         // }
 
         updateMosaicMap(mosaicMap) {
-            this.$set(this, 'localMosaicMap', mosaicMap)
-            this.$set(this, 'mosaicMap', mosaicMap)
             this.$store.commit('SET_MOSAIC_MAP', mosaicMap)
             this.$store.commit('SET_WALLET_BALANCE', mosaicMap[this.currentXEM1].amount)
         }

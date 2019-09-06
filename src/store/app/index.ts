@@ -1,10 +1,11 @@
 declare interface appInfo {
+    timeZone: number,
+    locale: string,
+    currentPanelIndex: number,
     walletList: any[]
     hasWallet: boolean,
-    currentPanelIndex: number,
-    mnemonic: string,
-    timeZone: number,
     isNodeHealthy: boolean,
+    mnemonic: string,
     chainStatus: {
         currentHeight: number,
         numTransactions: number,
@@ -21,7 +22,7 @@ declare interface appInfo {
 export default {
     state: {
         timeZone: new Date().getTimezoneOffset() / 60,   // current time zone
-        locale: false,
+        locale: 'en-US',
         currentPanelIndex: 0,
         walletList: [],
         hasWallet: false,

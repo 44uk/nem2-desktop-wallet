@@ -44,7 +44,7 @@ export class MonitorDashBoardTs extends Vue {
         return this.app.xemUsdPrice
     }
 
-    get isLoadingTransactions() {
+    get transactionsLoading() {
         return this.app.transactionsLoading
     }
 
@@ -102,6 +102,7 @@ export class MonitorDashBoardTs extends Vue {
     }
 
     // @TODO: Changing tab should reset the newly selected tab's pagination to 1
+    // @TODO: Scroll to top of the list when changing page
     async changePage(page) {
         this.page = page
     }
