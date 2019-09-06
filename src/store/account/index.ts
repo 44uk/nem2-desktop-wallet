@@ -35,18 +35,9 @@ export default {
         generationHash: ''
     },
     getters: {
-        Address(state) {
-            return state.account.address
+        wallet(state) {
+            return state.wallet
         },
-        PublicAccount(state) {
-            return state.account.publicAccount
-        },
-        privateKey(state) {
-            return state.account.privateKey
-        },
-        publicKey(state) {
-            return state.account.publicKey
-        }
     },
     mutations: {
         SET_ACCOUNT(state: account, account: Account): void {

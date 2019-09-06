@@ -1,15 +1,13 @@
-import {Message, nodeConfig} from "@/config/index.ts"
+import {Message} from "@/config/index.ts"
 import {market} from "@/core/api/logicApi.ts"
 import {KlineQuery} from "@/core/query/klineQuery.ts"
-import {Address, MosaicHttp, MosaicId, NamespaceHttp, NamespaceId} from 'nem2-sdk'
+import {Address} from 'nem2-sdk'
 import {MosaicApiRxjs} from '@/core/api/MosaicApiRxjs.ts'
 import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
 import {Component, Vue, Watch} from 'vue-property-decorator'
-import {aliasType} from '@/config/index.ts'
 import monitorSeleted from '@/common/img/monitor/monitorSeleted.png'
 import monitorUnselected from '@/common/img/monitor/monitorUnselected.png'
-import {getNamespaces, getMosaicList, getMosaicInfoList, AppWallet} from "@/core/utils/wallet.ts"
-import {copyTxt, localSave, formatXEMamount, formatNumber, getRelativeMosaicAmount} from '@/core/utils/utils.ts'
+import {copyTxt, formatXEMamount, formatNumber} from '@/core/utils/utils.ts'
 import {mapState} from "vuex"
 import {minitorPanelNavigatorList} from '@/config/index.ts'
 
@@ -28,15 +26,24 @@ export class MonitorPanelTs extends Vue {
     mosaicName = ''
     // @TODO: current price in the store
     currentPrice = 0
-    isLoadingMosaic = true
-    localMosaicMap: any = {}
     isShowAccountInfo = true
     isShowAccountAlias = false
     isShowManageMosaicIcon = false
     monitorSeleted = monitorSeleted
     monitorUnselected = monitorUnselected
     navigatorList: any = minitorPanelNavigatorList
-    mosaicMap: any = {}
+
+    get isLoadingBalance() {
+        return this.app.balanceLoading
+    }
+
+    get isLoadingMosaic() {
+        return this.app.mosaicsLoading
+    }
+
+    get mosaicMap() {
+        return this.activeAccount.mosaicMap
+    }
 
     get getWallet() {
         return this.activeAccount.wallet
@@ -44,10 +51,6 @@ export class MonitorPanelTs extends Vue {
 
     get XEMamount() {
         return this.activeAccount.wallet.balance
-    }
-
-    get accountAddress() {
-        return this.activeAccount.wallet.address
     }
 
     get address() {
@@ -58,28 +61,12 @@ export class MonitorPanelTs extends Vue {
         return this.activeAccount.node
     }
 
-    get currentXem() {
-        return this.activeAccount.currentXem
-    }
-
     get currentXEM1() {
         return this.activeAccount.currentXEM1
     }
 
     get currentXEM2() {
         return this.activeAccount.currentXEM2
-    }
-
-    get networkCurrencies() {
-        return [this.currentXEM1, this.currentXEM2]
-    }
-
-    get namespaceList() {
-        return this.activeAccount.namespace
-    }
-
-    get xemDivisibility() {
-        return this.activeAccount.xemDivisibility
     }
 
     switchPanel(index) {
@@ -116,42 +103,29 @@ export class MonitorPanelTs extends Vue {
         })
     }
 
+    // @TODO: probably not necessary
     initData() {
         this.$store.commit('SET_CURRENT_PANEL_INDEX', 0)
     }
 
-
-    getMyNamespaces() {
-        getNamespaces(this.getWallet.address, this.node)
-            .then((list) => {
-                this.$store.commit('SET_NAMESPACE', list)
-            })
-    }
-
     showMosaicMap() {
         this.isShowManageMosaicIcon = !this.isShowManageMosaicIcon
-        this.mosaicMap = this.localMosaicMap
     }
 
     toggleShowMosaic(key, value) {
-        if (!this.localMosaicMap[key]) {
-            this.localMosaicMap[key] = value
-        }
-        this.localMosaicMap[key].show = !this.localMosaicMap[key].show
-        this.saveMosaicRecordInLocal()
-    }
-
-    saveMosaicRecordInLocal() {
-        // save address
-        this.isLoadingMosaic = false
-        localSave(this.accountAddress, JSON.stringify(this.localMosaicMap))
+        const updatedMap = {...this.mosaicMap}
+        if (!updatedMap[key]) return
+        const updatedMosaic = {...value}
+        updatedMosaic.show = !updatedMosaic.show
+        updatedMap[key] = updatedMosaic
+        this.$store.commit('SET_MOSAIC_MAP', updatedMap)
     }
 
     getAccountsName() {
         const that = this
-        const {accountAddress, node} = this
-        if (!accountAddress || accountAddress.length < 40) return
-        new AccountApiRxjs().getAccountsNames([Address.createFromRawAddress(accountAddress)], node).subscribe((namespaceInfo) => {
+        const {address, node} = this
+        if (!address || address.length < 40) return
+        new AccountApiRxjs().getAccountsNames([Address.createFromRawAddress(address)], node).subscribe((namespaceInfo) => {
             if (namespaceInfo[0].names.length > 0) {
                 that.isShowAccountAlias = true
             } else {
@@ -174,117 +148,6 @@ export class MonitorPanelTs extends Vue {
         }
     }
 
-    async initMosaic() {
-        this.isLoadingMosaic = true
-        const that = this
-        let {accountAddress, node, currentXEM1, currentXem, currentXEM2} = this
-        let mosaicMap = {}
-        let addressMap = {}
-        let mosaicHexIds = []
-        const defaultMosaic = {
-            amount: 0,
-            name: nodeConfig.currentXem,
-            hex: that.currentXEM1,
-            show: true,
-            divisibility: 6,
-            showInManage: true
-        }
-        let mosaicList: any = await getMosaicList(accountAddress, node)
-        mosaicList.map((item, index) => {
-            mosaicHexIds[index] = item.id.toHex()
-            return item.id
-        })
-        const mosaicInfoList = await getMosaicInfoList(node, mosaicList)
-        new NamespaceHttp(node).getLinkedMosaicId(new NamespaceId(nodeConfig.currentXem)).subscribe((mosaicId) => {
-            // set current xem hex
-            currentXEM1 = mosaicId.toHex()
-            this.$store.commit('SET_CURRENT_XEM_1', currentXEM1)
-            // set current xem divisibility
-            new MosaicHttp(node).getMosaic(mosaicId).subscribe((mosaic: any) => {
-                that.$store.commit('SET_XEM_DIVISIBILITY', mosaic.properties.divisibility)
-            })
-            mosaicList = mosaicInfoList.map((item: any) => {
-                const mosaicItem: any = mosaicList[mosaicHexIds.indexOf(item.mosaicId.toHex())]
-                mosaicItem.hex = item.mosaicId.toHex()
-                if (mosaicItem.hex == currentXEM2 || mosaicItem.hex == currentXEM1) {
-                    mosaicItem.name = currentXem
-                    mosaicItem.amount = getRelativeMosaicAmount(mosaicItem.amount.compact(), item.divisibility)
-                    mosaicItem.show = true
-                    mosaicItem.divisibility = item.properties.divisibility
-                    mosaicItem.showInManage = true
-                    return mosaicItem
-                }
-                mosaicItem.name = item.mosaicId.toHex()
-                mosaicItem.amount = getRelativeMosaicAmount(mosaicItem.amount.compact(), item.divisibility)
-                mosaicItem.show = true
-                mosaicItem.divisibility = item.properties.divisibility
-                mosaicItem.showInManage = true
-                return mosaicItem
-            })
-            const isCoinExist = mosaicList.every((item) => {
-                if (item.id.toHex() == that.currentXEM2 || item.id.toHex() == that.currentXEM1) {
-                    return false
-                }
-                return true
-            })
-            if (isCoinExist) {
-                mosaicList.unshift({
-                    amount: 0,
-                    hex: currentXEM1,
-                    divisibility: that.xemDivisibility,
-                    name: nodeConfig.currentXem,
-                    id: new MosaicId(currentXEM1),
-                    show: true,
-                    showInManage: true
-                })
-            }
-            mosaicList = mosaicList.reverse()
-            mosaicList.forEach((item) => {
-                mosaicMap[item.hex] = {
-                    amount: item.amount,
-                    name: item.name,
-                    divisibility: item.divisibility,
-                    hex: item.hex,
-                    show: true,
-                    showInManage: true
-                }
-            })
-            this.namespaceList.forEach((item) => {
-                switch (item.alias.type) {
-                    case aliasType.mosaicAlias:
-                        const mosaicHex = new MosaicId(item.alias.mosaicId).toHex()
-                        if (mosaicMap[mosaicHex]) {
-                            mosaicMap[mosaicHex].name = item.label
-                        }
-                        break
-                    case  aliasType.addressAlias:
-                        //@ts-ignore
-                        const address = Address.createFromEncoded(item.alias.address).address
-                        addressMap[address] = item
-                        break
-                }
-            })
-            that.updateMosaicMap(mosaicMap)
-            this.$store.commit('SET_ADDRESS_ALIAS_MAP', addressMap)
-            that.isLoadingMosaic = false
-            if (mosaicList.length > 0) {
-                this.$store.commit('SET_MOSAICS', mosaicList)
-            } else {
-                this.$store.commit('SET_MOSAICS', [defaultMosaic])
-                mosaicMap[defaultMosaic.hex] = defaultMosaic
-            }
-        })
-    }
-
-
-    updateMosaicMap(mosaicMap) {
-        this.$set(this, 'localMosaicMap', mosaicMap)
-        this.$set(this, 'mosaicMap', mosaicMap)
-        this.$store.commit('SET_MOSAIC_MAP', mosaicMap)
-        this.$store.commit('SET_WALLET_BALANCE', mosaicMap[this.currentXEM1].amount)
-    }
-
-
     formatNumber(number) {
         return formatNumber(number)
     }
@@ -306,12 +169,12 @@ export class MonitorPanelTs extends Vue {
         const mosaicHex = new MosaicApiRxjs().getMosaicByNamespace(mosaicName).id.toHex()
         if (mosaicMap[mosaicHex]) {
             searchResult[mosaicHex] = mosaicMap[mosaicHex]
-            that.mosaicMap = searchResult
+            // that.mosaicMap = searchResult
             return
         }
         if (mosaicHex == currentXEM1 || currentXEM2 == mosaicHex) {
             searchResult[mosaicHex] = mosaicMap[currentXEM1] ? mosaicMap[currentXEM1] : mosaicMap[currentXEM2]
-            that.mosaicMap = searchResult
+            // that.mosaicMap = searchResult
             return
         }
         searchResult[mosaicHex] = {
@@ -321,7 +184,7 @@ export class MonitorPanelTs extends Vue {
             show: false,
             showInManage: true
         }
-        that.mosaicMap = searchResult
+        // that.mosaicMap = searchResult
     }
 
     showErrorMessage(message) {
@@ -340,16 +203,15 @@ export class MonitorPanelTs extends Vue {
     @Watch('getWallet')
     onGetWalletChange(n, o) {
         if (!n.address || n.address === o.address) return
-        this.initData()
-        this.initMosaic()
-        new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
+        this.initData() // @TODO: probably not necessary
         this.getAccountsName()
         this.getMarketOpenPrice()
-        this.getMyNamespaces()
     }
 
     @Watch('mosaicName')
     onMosaicNameChange() {
+        // @TODO: do not mutate mosaicMap outside of a mutation handler
+        // @TODO: make a new Set() {mosaicMapKey: show: bool} instead
         const {mosaicMap, mosaicName} = this
         for (const item in mosaicMap) {
             if (item.indexOf(mosaicName) !== -1 || mosaicMap[item].name.indexOf(mosaicName) !== -1) {
@@ -364,12 +226,9 @@ export class MonitorPanelTs extends Vue {
         this.switchPanel(0)
         this.setLeftSwitchIcon()
         this.initLeftNavigator()
-        this.initData()
+        this.initData() // @TODO: probably not necessary
         this.getMarketOpenPrice()
         // Functions hereunder should probably not be here
-        this.getMyNamespaces()
         this.getAccountsName()
-        this.initMosaic()
-        new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
     }
 }

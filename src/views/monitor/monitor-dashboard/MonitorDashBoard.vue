@@ -13,16 +13,24 @@
         </span>
       </div>
       <div>
-        <div v-if="key !=='transfer_type'" v-for="(value,key,index) in transactionDetails.dialogDetailMap"
-             class="other_info">
-          <span class="title">{{$t(key)}}</span>
-          <span class="value overflow_ellipsis">{{value}}</span>
+        <div
+          v-for="(value, key) in transactionDetails.dialogDetailMap"
+          :key="key"
+          class="other_info"
+        >
+          <div v-if="key !== 'transfer_type'">
+            <span class="title">{{$t(key)}}</span>
+            <span class="value overflow_ellipsis">{{value}}</span>
+          </div>
         </div>
-        <!--        inner transaction-->
+        <!-- inner transaction -->
         <div v-if="transactionDetails.formatAggregateCompelete">
           <span class=" title"> {{$t('inner_transaction')}}</span>
-          <div class="inner_transaction"
-               v-for="(innerTransaction ) in transactionDetails.formatAggregateCompelete">
+          <div
+            v-for="(innerTransaction, index) in transactionDetails.formatAggregateCompelete"
+            :key="index"
+            class="inner_transaction"
+          >
             <span class="pointer value" @click="showInnerDialog(innerTransaction)">{{$t(innerTransaction.dialogDetailMap.transfer_type)}}</span>
           </div>
         </div>
@@ -41,10 +49,15 @@
           ? $t(currentInnerTransaction.dialogDetailMap.transfer_type) :'-'}}</span>
       </div>
       <div>
-        <div v-if="key !=='transfer_type'" v-for="(value,key,index) in currentInnerTransaction.dialogDetailMap"
-             class="other_info">
-          <span class="title overflow_ellipsis">{{$t(key)}}</span>
-          <span class="value overflow_ellipsis">{{value}}</span>
+          <div
+            v-for="(value, key) in currentInnerTransaction.dialogDetailMap"
+            class="other_info"
+            :key="key"
+          >
+          <div v-if="key !=='transfer_type'">
+            <span class="title overflow_ellipsis">{{$t(key)}}</span>
+            <span class="value overflow_ellipsis">{{value}}</span>
+          </div>
         </div>
       </div>
     </Modal>
@@ -58,19 +71,21 @@
           <span class="black">{{formatNumber(currentPrice)}}</span>
         </span>
         <div>
-   <span class="right">
-          <span>{{$t('average_price')}}</span><span class="black">${{averagePrice}} </span>
-           <span>{{$t('yesterday')}}</span><span :class="riseRange < 0 ? 'red':'green'">{{riseRange}}%</span>
-        </span>
+          <span class="right">
+              <span>{{$t('average_price')}}</span><span class="black">${{averagePrice}} </span>
+            <span>{{$t('yesterday')}}</span><span :class="riseRange < 0 ? 'red':'green'">{{riseRange}}%</span>
+          </span>
         </div>
-
-
-        <LineChart></LineChart>
+        <LineChart />
       </div>
       <div class="right_net_status radius">
         <div class="panel_name">{{$t('network_status')}}</div>
 
-        <div class="network_item radius" v-for="(n,index) in networkStatusList">
+        <div
+          class="network_item radius"
+          v-for="(n, index) in networkStatusList"
+          :key="index"
+        >
           <img :src="n.icon" alt="">
           <span class="descript">{{$t(n.descript)}}</span>
           <span :class="['data','overflow_ellipsis', updateAnimation]">
@@ -110,7 +125,12 @@
           <div class="confirmed_transactions">
             <Spin v-if="isLoadingTransactions" size="large" fix class="absolute"></Spin>
             <div class="table_body hide_scroll" ref="confirmedTableBody">
-              <div class="table_item pointer" @click="showDialog(c,true)" v-for="c in currentTransactionList">
+              <div
+                class="table_item pointer"
+                @click="showDialog(c,true)"
+                v-for="(c, index) in currentTransactionList"
+                :key="index"
+              >
                 <img class="mosaic_action" v-if="!c.isReceipt"
                      src="@/common/img/monitor/dash-board/dashboardMosaicOut.png" alt="">
                 <img class="mosaic_action" v-else src="@/common/img/monitor/dash-board/dashboardMosaicIn.png"

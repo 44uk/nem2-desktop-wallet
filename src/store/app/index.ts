@@ -11,7 +11,9 @@ declare interface appInfo {
         currentBlockInfo: any,
         signerPublicKey?: string,
         nodeAmount?: number
-    }
+    },
+    mosaicsLoading: boolean,
+    balanceLoading: boolean,
 }
 
 export default {
@@ -29,8 +31,10 @@ export default {
             currentBlockInfo: {},
             signerPublicKey: '',
             nodeAmount: 4
-        }
-    },
+        },
+        mosaicsLoading: false,
+        balanceLoading: false,
+},
     getters: {},
     mutations: {
         SET_CURRENT_PANEL_INDEX(state: appInfo, index: any) {
@@ -51,7 +55,12 @@ export default {
         SET_IS_NODE_HEALTHY(state: appInfo, isNodeHealthy: boolean) {
             state.isNodeHealthy = isNodeHealthy
         },
-
+        SET_MOSAIC_LOADING(state: appInfo, bool: boolean) {
+            state.mosaicsLoading = bool
+        },
+        SET_BALANCE_LOADING(state: appInfo, bool: boolean) {
+            state.balanceLoading = bool
+        },
         SET_CHAIN_STATUS(state: appInfo, chainStatus: any) {
             const {currentHeight, numTransactions, currentBlockInfo, signerPublicKey, nodeAmount} = chainStatus
             state.chainStatus.currentHeight = currentHeight ? currentHeight : state.chainStatus.currentHeight

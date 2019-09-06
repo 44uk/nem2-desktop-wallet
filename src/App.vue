@@ -6,10 +6,10 @@
 
 <script lang="ts">
     import 'animate.css'
-    import {isWindows, Message} from "@/config/index.ts"
-    import {localRead, localSave} from '@/core/utils/utils.ts'
-    import {AppWallet} from '@/core/utils/wallet.ts'
-    import {Listener, NamespaceHttp, NamespaceId, Address} from "nem2-sdk"
+    import {isWindows, Message, nodeConfig} from "@/config/index.ts"
+    import {localRead, localSave, getRelativeMosaicAmount} from '@/core/utils/utils.ts'
+    import {AppWallet, getMosaicList, getMosaicInfoList, getNamespaces} from '@/core/utils/wallet.ts'
+    import {Listener, NamespaceHttp, NamespaceId, Address, MosaicHttp, MosaicId} from "nem2-sdk"
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
     import {ListenerApiRxjs} from '@/core/api/ListenerApiRxjs.ts'
@@ -17,6 +17,7 @@
     import {mapState} from 'vuex'
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
     import {ChainListeners} from '@/core/services/listeners'
+    import {aliasType} from '@/config/index.ts'
 
     @Component({
         computed: {
@@ -40,12 +41,20 @@
             return this.activeAccount.wallet
         }
 
-        get currentXEM2(): string {
-            return this.activeAccount.currentXEM2
+        get currentXem() {
+            return this.activeAccount.currentXem
         }
 
         get currentXEM1(): string {
             return this.activeAccount.currentXEM1
+        }
+
+        get currentXEM2(): string {
+            return this.activeAccount.currentXEM2
+        }
+
+        get namespaceList() {
+            return this.activeAccount.namespace
         }
 
         get preBlockInfo() {
@@ -60,43 +69,17 @@
             return this.activeAccount.node
         }
 
-/*
-    ----------------------
-    Confirmed Tx change
-    ----------------------
+        get networkCurrencies() {
+            return [this.currentXEM1, this.currentXEM2]
+        }
 
-    // MonitorDashboard
-    this.allTransactionsList = []
-    this.refreshReceiptList()
-    this.refreshTransferTransactionList()
+        get xemDivisibility() {
+            return this.activeAccount.xemDivisibility
+        }
 
-    // MosaicList
-    this.initMosaic()
-
-    // WalletPanel
-    this.getMyNamespaces()
-
-    // NamespaceTs
-    this.getMyNamespaces()
-
-    // CollectionRecord
-    this.isLoadingTransactionRecord = true
-    this.getConfirmedTransactions()
-
-    // MonitorPanel
-    this.initMosaic()
-    new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
-    this.getAccountsName()
-    this.getMyNamespaces()
-
-    ----------------------
-    Unconfirmed Tx change
-    ----------------------
-    // Collection record
-    this.isLoadingTransactionRecord = true
-    this.getUnConfirmedTransactions()
-*/
-
+        get accountAddress() {
+            return this.activeAccount.wallet.address
+        }
         // App init
         // Endpoint change
         // SET_IS_NODE_HEALTHY set to false
@@ -159,8 +142,9 @@
             }
         }
 
-
+        // @TODO: move out from there
         async setWalletsBalancesAndMultisigStatus() {
+            this.$store.commit('SET_BALANCE_LOADING', true)
             const walletListFromStorage: any = localRead('wallets') !== '' ? JSON.parse(localRead('wallets')) : false
             if (!walletListFromStorage || !walletListFromStorage.length) return
             AppWallet.switchWallet(walletListFromStorage[0].address, walletListFromStorage, this.$store)
@@ -174,8 +158,11 @@
                 const walletListWithBalances = [...walletListFromStorage].map((wallet, i) => ({...wallet, balance: balances[i]}))
                 const activeWalletWithBalance = walletListWithBalances.find(wallet => wallet.address === this.wallet.address)
                 if (activeWalletWithBalance === undefined) throw new Error('an active wallet was not found in the wallet list')
-                this.$store.commit('SET_WALLET_LIST', walletListWithBalances)
-                this.$store.commit('SET_WALLET', activeWalletWithBalance)
+                await Promise.all([
+                    this.$store.commit('SET_WALLET_LIST', walletListWithBalances),
+                    this.$store.commit('SET_WALLET', activeWalletWithBalance),
+                ])
+                this.$store.commit('SET_BALANCE_LOADING', false)
                 localSave('wallets', JSON.stringify(walletListWithBalances))
 
                 const multisigStatuses = await Promise.all(
@@ -198,42 +185,180 @@
               throw new Error(error)
             }
         }
+    
+        // @TODO: move out from there
+        async initMosaic() {
+            this.$store.commit('SET_MOSAIC_LOADING', true)
+            console.log('initMosaic', this.accountAddress, 'dazdaz')
+            const that = this
+            let {accountAddress, node, currentXEM1, currentXem, currentXEM2} = this
+            let mosaicMap = {}
+            let addressMap = {}
+            let mosaicHexIds = []
+            const defaultMosaic = {
+                amount: 0,
+                name: nodeConfig.currentXem,
+                hex: that.currentXEM1,
+                show: true,
+                divisibility: 6,
+                showInManage: true
+            }
+            let mosaicList: any = await getMosaicList(accountAddress, node)
+            mosaicList.map((item, index) => {
+                mosaicHexIds[index] = item.id.toHex()
+                return item.id
+            })
+            const mosaicInfoList = await getMosaicInfoList(node, mosaicList)
+            new NamespaceHttp(node).getLinkedMosaicId(new NamespaceId(nodeConfig.currentXem)).subscribe((mosaicId) => {
+                // @TODO: move to a separate function, On Generation Hash change
+                // set current xem hex
+                currentXEM1 = mosaicId.toHex()
+                this.$store.commit('SET_CURRENT_XEM_1', currentXEM1)
+                // @TODO: move to a separate function, On Generation Hash change
+                new MosaicHttp(node).getMosaic(mosaicId).subscribe((mosaic: any) => {
+                    that.$store.commit('SET_XEM_DIVISIBILITY', mosaic.properties.divisibility)
+                })
 
+                mosaicList = mosaicInfoList.map((item: any) => {
+                    const mosaicItem: any = mosaicList[mosaicHexIds.indexOf(item.mosaicId.toHex())]
+                    mosaicItem.hex = item.mosaicId.toHex()
+                    if (mosaicItem.hex == currentXEM2 || mosaicItem.hex == currentXEM1) {
+                        mosaicItem.name = currentXem
+                        mosaicItem.amount = getRelativeMosaicAmount(mosaicItem.amount.compact(), item.divisibility)
+                        mosaicItem.show = true
+                        mosaicItem.divisibility = item.properties.divisibility
+                        mosaicItem.showInManage = true
+                        return mosaicItem
+                    }
+                    mosaicItem.name = item.mosaicId.toHex()
+                    mosaicItem.amount = getRelativeMosaicAmount(mosaicItem.amount.compact(), item.divisibility)
+                    mosaicItem.show = true
+                    mosaicItem.divisibility = item.properties.divisibility
+                    mosaicItem.showInManage = true
+                    return mosaicItem
+                })
+                const isCoinExist = mosaicList.every((item) => {
+                    if (item.id.toHex() == that.currentXEM2 || item.id.toHex() == that.currentXEM1) {
+                        return false
+                    }
+                    return true
+                })
+                if (isCoinExist) {
+                    mosaicList.unshift({
+                        amount: 0,
+                        hex: currentXEM1,
+                        divisibility: that.xemDivisibility,
+                        name: nodeConfig.currentXem,
+                        id: new MosaicId(currentXEM1),
+                        show: true,
+                        showInManage: true
+                    })
+                }
+                mosaicList = mosaicList.reverse()
+                mosaicList.forEach((item) => {
+                    mosaicMap[item.hex] = {
+                        amount: item.amount,
+                        name: item.name,
+                        divisibility: item.divisibility,
+                        hex: item.hex,
+                        show: true,
+                        showInManage: true
+                    }
+                })
+                this.namespaceList.forEach((item) => {
+                    switch (item.alias.type) {
+                        case aliasType.mosaicAlias:
+                            const mosaicHex = new MosaicId(item.alias.mosaicId).toHex()
+                            if (mosaicMap[mosaicHex]) {
+                                mosaicMap[mosaicHex].name = item.label
+                            }
+                            break
+                        case  aliasType.addressAlias:
+                            //@ts-ignore
+                            const address = Address.createFromEncoded(item.alias.address).address
+                            addressMap[address] = item
+                            break
+                    }
+                })
+                that.updateMosaicMap(mosaicMap)
+                this.$store.commit('SET_ADDRESS_ALIAS_MAP', addressMap)
+                if (mosaicList.length > 0) {
+                    this.$store.commit('SET_MOSAICS', mosaicList)
+                } else {
+                    this.$store.commit('SET_MOSAICS', [defaultMosaic])
+                    mosaicMap[defaultMosaic.hex] = defaultMosaic
+                }
+                this.$store.commit('SET_MOSAIC_LOADING', false)
+            })
+        }
 
+        updateMosaicMap(mosaicMap) {
+            this.$set(this, 'localMosaicMap', mosaicMap)
+            this.$set(this, 'mosaicMap', mosaicMap)
+            this.$store.commit('SET_MOSAIC_MAP', mosaicMap)
+            this.$store.commit('SET_WALLET_BALANCE', mosaicMap[this.currentXEM1].amount)
+        }
 
         mounted() {
+            this.setWalletsBalancesAndMultisigStatus()
+            if (this.wallet && this.wallet.address) {
+                if (!this.chainListeners) {
+                    this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
+                    this.chainListeners.start()
+                } else {
+                    this.chainListeners.switchAddress(this.wallet.address)
+                }
+                this.initMosaic()
+            }
             this.$Notice.config({
                 duration: 4,
             })
-            
+
+            this.$store.watch(
+                (state, getters) => getters.wallet,
+                async (newWallet, oldWallet) => {
+                    /**
+                     * On No Wallet Set
+                     */
+                    if(!newWallet || !newWallet.address) {
+                        // @TODO: no wallet available
+                    }
+                    
+                    /**
+                     * On Wallet Change
+                     */
+                    if (newWallet.address !== oldWallet.address) {
+                        console.log('on wallet change,', )
+                        if (!this.chainListeners) {
+                            this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
+                            this.chainListeners.start()
+                        } else {
+                            this.chainListeners.switchAddress(newWallet.address)
+                        }
+                        try {
+                            const res = await Promise.all([
+                                new AppWallet(newWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store),
+                                this.initMosaic(),
+                                // @TODO mape AppWallet method
+                                getNamespaces(newWallet.address, this.node)
+                            ])
+                                
+                            this.$store.commit('SET_NAMESPACE', res[2])
+                            
+                        } catch (error) {
+                            console.error(error, 'ERROR')
+                        }
+
+                    }
+            }, {deep: true})
+
+
             this.$store.subscribe((mutation, state) => {
               switch(mutation.type) {
-                  /**
-                   * On Wallet Change
-                   */
-                  case 'SET_WALLET':
-                    const {wallet} = state.account;
-                    console.log(`SET_WALLET to ${wallet.address}`);
-
-                    if(!wallet.address) {
-                        // No wallet available
-                        return
-                    }
-
-
-                    if (!this.chainListeners) {
-                        this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
-                        this.chainListeners.start()
-                    } else {
-                        this.chainListeners.switchAddress(this.wallet.address)
-                    }
-
-                    break;
-
-                  /**
-                   * On Endpoint Change
-                   */
-                  case 'SET_NODE':
+                    /**
+                     * On Node Change
+                     */
+                    case 'SET_NODE':
                         if (!this.chainListeners) {
                             this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
                             this.chainListeners.start()
@@ -241,13 +366,10 @@
                             this.chainListeners.switchEndpoint(this.node)
                         }
                     break;
-                
-                    
               }
             })
 
             // @TODO: hook to onLogin event
-            this.setWalletsBalancesAndMultisigStatus()
         }
 
         created() {
@@ -256,6 +378,45 @@
             }
         }
     }
+
+
+
+/*
+    ----------------------
+    Confirmed Tx change
+    ----------------------
+
+    // MonitorDashboard
+    this.allTransactionsList = []
+    this.refreshReceiptList()
+    this.refreshTransferTransactionList()
+
+    // MosaicList
+    this.initMosaic()
+
+    // WalletPanel
+    this.getMyNamespaces()
+
+    // NamespaceTs
+    this.getMyNamespaces()
+
+    // CollectionRecord
+    this.isLoadingTransactionRecord = true
+    this.getConfirmedTransactions()
+
+    // MonitorPanel
+    this.initMosaic()
+    new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
+    this.getAccountsName()
+    this.getMyNamespaces()
+
+    ----------------------
+    Unconfirmed Tx change
+    ----------------------
+    // Collection record
+    this.isLoadingTransactionRecord = true
+    this.getUnConfirmedTransactions()
+*/
 </script>
 
 <style lang="less">

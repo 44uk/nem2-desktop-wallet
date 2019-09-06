@@ -221,8 +221,6 @@ export class AppWallet {
             if (!accountInfo.mosaics.length) return 0
             const xemIndex = accountInfo.mosaics
                 .findIndex(mosaic => networkCurrencies.indexOf(mosaic.id.toHex()) > -1)
-
-
             if (xemIndex === -1) return 0
             // @TODO: handle divisibility
             return accountInfo.mosaics[xemIndex].amount.compact() / 1000000
@@ -233,10 +231,13 @@ export class AppWallet {
 
     async updateAccountBalance(networkCurrencies: any, node: string, store: any) {
         try {
+            store.commit('SET_BALANCE_LOADING', true)
             const balance = await this.getAccountBalance(networkCurrencies, node)
             this.balance = balance
             this.updateWallet(store)
+            store.commit('SET_BALANCE_LOADING', false)
         } catch (error) {
+            store.commit('SET_BALANCE_LOADING', false)
             // do nothing
         }
     }

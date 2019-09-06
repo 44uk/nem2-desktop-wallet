@@ -2,7 +2,6 @@ import {mapState} from "vuex"
 import {market} from "@/core/api/logicApi.ts"
 import {PublicAccount, NetworkType} from 'nem2-sdk'
 import {KlineQuery} from "@/core/query/klineQuery.ts"
-import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
 import {MosaicApiRxjs} from '@/core/api/MosaicApiRxjs.ts'
 import {transactionFormat} from '@/core/utils/format.ts'
 import {Component, Vue, Watch} from 'vue-property-decorator'
@@ -47,7 +46,6 @@ export class MonitorDashBoardTs extends Vue {
     transactionDetails: any = {}
     isLoadingModalDetailsInfo = false
     networkStatusList = networkStatusList
-
 
     get wallet() {
         return this.activeAccount.wallet
@@ -301,9 +299,8 @@ export class MonitorDashBoardTs extends Vue {
     @Watch('wallet.address')
     onGetWalletChange() {
         this.allTransactionsList = []
-        this.refreshReceiptList()
-        this.refreshTransferTransactionList()
-        this.getMarketOpenPrice()
+        // this.refreshReceiptList()
+        // this.refreshTransferTransactionList()
     }
 
 
@@ -314,14 +311,13 @@ export class MonitorDashBoardTs extends Vue {
         const transactionList = transactionFormat(allTransactionsList, accountAddress, currentXEM1, xemDivisibility, node)
         this.transferTransactionList = transactionList.transferTransactionList
         this.receiptList = transactionList.receiptList
-        this.changePage(1)
+        /** OK */ this.changePage(1)
         this.transferListLength = this.transferTransactionList.length
         this.receiptListLength = this.receiptList.length
         this.currentDataAmount = isShowTransferTransactions ? this.transferListLength : this.receiptListLength
-
     }
 
-
+    // @TODO: isnt't it doable in pure CSS?
     @Watch('currentHeight')
     onChainStatus() {
         this.updateAnimation = 'appear'
@@ -337,7 +333,7 @@ export class MonitorDashBoardTs extends Vue {
     mounted() {
         this.getMarketPrice()
         this.getMarketOpenPrice()
-        this.refreshTransferTransactionList()
-        this.refreshReceiptList()
+        // this.refreshTransferTransactionList()
+        // this.refreshReceiptList()
     }
 }
