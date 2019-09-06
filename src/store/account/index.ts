@@ -16,6 +16,7 @@ declare interface account {
     generationHash: string,
     addresAliasMap: any,
     xemDivisibility: number
+    transactionList: any,
 }
 
 export default {
@@ -32,7 +33,11 @@ export default {
         errorTx: [],
         mosaicMap: {},
         addresAliasMap: {},
-        generationHash: ''
+        generationHash: '',
+        transactionList: {
+            transferTransactionList: [],
+            receiptList: [],
+        },
     },
     getters: {
         wallet(state) {
@@ -75,6 +80,12 @@ export default {
         },
         SET_WALLET_BALANCE(state: account, balance: number) {
             state.wallet.balance = balance
+        },
+        SET_TRANSACTION_LIST(state: account, list: any[]) {
+            state.transactionList = list
+        },
+        UPDATE_TRANSACTION_LIST(state: account, transaction: any) {
+            state.transactionList.push(transaction)
         },
     },
 }

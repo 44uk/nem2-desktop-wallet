@@ -9,7 +9,10 @@
     import {isWindows, Message, nodeConfig} from "@/config/index.ts"
     import {localRead, localSave, getRelativeMosaicAmount} from '@/core/utils/utils.ts'
     import {AppWallet, getMosaicList, getMosaicInfoList, getNamespaces} from '@/core/utils/wallet.ts'
-    import {Listener, NamespaceHttp, NamespaceId, Address, MosaicHttp, MosaicId} from "nem2-sdk"
+    import {
+        Listener, NamespaceHttp, NamespaceId, Address, MosaicHttp, MosaicId,
+        PublicAccount, NetworkType
+    } from "nem2-sdk"
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
     import {ListenerApiRxjs} from '@/core/api/ListenerApiRxjs.ts'
@@ -18,6 +21,10 @@
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
     import {ChainListeners} from '@/core/services/listeners'
     import {aliasType} from '@/config/index.ts'
+    import {market} from "@/core/api/logicApi.ts"
+    import {KlineQuery} from "@/core/query/klineQuery.ts"
+    import {TransactionApiRxjs} from '@/core/api/TransactionApiRxjs.ts'
+    import {transactionFormat} from '@/core/utils/format.ts'
 
     @Component({
         computed: {
@@ -35,6 +42,10 @@
 
         get node(): string {
             return this.activeAccount.node
+        }
+
+        get accountPublicKey() {
+            return this.activeAccount.wallet.publicKey
         }
 
         get wallet(): any {
@@ -149,6 +160,7 @@
             if (!walletListFromStorage || !walletListFromStorage.length) return
             AppWallet.switchWallet(walletListFromStorage[0].address, walletListFromStorage, this.$store)
             const networkCurrencies = [this.currentXEM1, this.currentXEM2]
+            // @TODO: use get accountsInfo instead
             try {
                 const balances = await Promise.all(
                     [...walletListFromStorage]
@@ -292,6 +304,62 @@
             })
         }
 
+        // @TODO: move out from there
+        async getMarketOpenPrice() {
+            const that = this
+            const rstStr = await market.kline({period: "1min", symbol: "xemusdt", size: "1"})
+            if (!rstStr.rst) return
+            const rstQuery: KlineQuery = JSON.parse(rstStr.rst)
+            const result = rstQuery.data ? rstQuery.data[0].close : 0
+            this.$store.commit('SET_XEM_USD_PRICE', result)
+            const openPriceOneMinute = {
+                timestamp: new Date().getTime(),
+                openPrice: result
+            }
+            localSave('openPriceOneMinute', JSON.stringify(openPriceOneMinute))
+        }
+
+        //  @TODO: make it an AppWallet method
+        //  need to be finished before starting confirmed listener
+        //  Might be better to switchMap them together
+        setTransferTransactionList(address) {
+            this.$store.commit('SET_TRANSACTIONS_LOADING', true)
+            const that = this
+            let {accountPublicKey, node} = this
+            if (!accountPublicKey || accountPublicKey.length < 64) return
+            const publicAccount = PublicAccount
+                .createFromPublicKey(accountPublicKey, NetworkType.MIJIN_TEST)
+            new TransactionApiRxjs().transactions(
+                publicAccount,
+                {
+                    pageSize: 100
+                },
+                node,
+            ).subscribe(async (transactionList) => {
+                try {
+                    const txList = transactionFormat(
+                        transactionList,
+                        address,
+                        this.currentXEM1,
+                        this.xemDivisibility,
+                        this.node,
+                    )
+                await this.$store.commit('SET_TRANSACTION_LIST', txList)
+                this.$store.commit('SET_TRANSACTIONS_LOADING', false)
+                } catch (error) {
+                    console.error(error)
+                }
+
+            })
+        }
+
+        // @TODO: integrate
+        // try {
+        //     await that.getBlockInfoByTransactionList(that.allTransactionsList, node)
+        // } catch (e) {
+        //     console.log(e)
+        // }
+
         updateMosaicMap(mosaicMap) {
             this.$set(this, 'localMosaicMap', mosaicMap)
             this.$set(this, 'mosaicMap', mosaicMap)
@@ -301,6 +369,7 @@
 
         mounted() {
             this.setWalletsBalancesAndMultisigStatus()
+            this.getMarketOpenPrice()
             if (this.wallet && this.wallet.address) {
                 if (!this.chainListeners) {
                     this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
@@ -309,10 +378,10 @@
                     this.chainListeners.switchAddress(this.wallet.address)
                 }
                 this.initMosaic()
+                this.setTransferTransactionList(this.wallet.address)
             }
-            this.$Notice.config({
-                duration: 4,
-            })
+
+            this.$Notice.config({ duration: 4 })
 
             this.$store.watch(
                 (state, getters) => getters.wallet,
@@ -336,11 +405,14 @@
                             this.chainListeners.switchAddress(newWallet.address)
                         }
                         try {
+                            await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
+
                             const res = await Promise.all([
                                 new AppWallet(newWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store),
+                                // @TODO mape AppWallet methods
                                 this.initMosaic(),
-                                // @TODO mape AppWallet method
-                                getNamespaces(newWallet.address, this.node)
+                                getNamespaces(newWallet.address, this.node),
+                                this.setTransferTransactionList(newWallet.address)
                             ])
                                 
                             this.$store.commit('SET_NAMESPACE', res[2])
@@ -382,6 +454,12 @@
 
 
 /*
+    ----------------------
+    TODOs
+    ----------------------
+    Get account address alias (update when method available)
+
+
     ----------------------
     Confirmed Tx change
     ----------------------

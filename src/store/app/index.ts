@@ -14,6 +14,8 @@ declare interface appInfo {
     },
     mosaicsLoading: boolean,
     balanceLoading: boolean,
+    transactionsLoading: boolean,
+    xemUsdPrice: Number,
 }
 
 export default {
@@ -34,7 +36,9 @@ export default {
         },
         mosaicsLoading: false,
         balanceLoading: false,
-},
+        transactionsLoading: false,
+        xemUsdPrice: 0,
+    },
     getters: {},
     mutations: {
         SET_CURRENT_PANEL_INDEX(state: appInfo, index: any) {
@@ -60,6 +64,12 @@ export default {
         },
         SET_BALANCE_LOADING(state: appInfo, bool: boolean) {
             state.balanceLoading = bool
+        },
+        SET_TRANSACTIONS_LOADING(state: appInfo, bool: boolean) {
+            state.transactionsLoading = bool
+        },
+        SET_XEM_USD_PRICE(state: appInfo, value: number) {
+            state.xemUsdPrice = value
         },
         SET_CHAIN_STATUS(state: appInfo, chainStatus: any) {
             const {currentHeight, numTransactions, currentBlockInfo, signerPublicKey, nodeAmount} = chainStatus

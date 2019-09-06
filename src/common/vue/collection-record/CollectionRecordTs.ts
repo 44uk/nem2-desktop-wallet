@@ -22,7 +22,6 @@ import {MosaicApiRxjs} from "@/core/api/MosaicApiRxjs"
 export class CollectionRecordTs extends Vue {
     activeAccount: any
     app: any
-    currentPrice = 0
     transactionHash = ''
     isShowDialog = false
     isShowSearchDetail = false
@@ -48,7 +47,9 @@ export class CollectionRecordTs extends Vue {
     get getWallet() {
         return this.activeAccount.wallet
     }
-
+    get xemUsdPrice() {
+        return this.app.xemUsdPrice
+    }
     get currentXEM1() {
         return this.activeAccount.currentXEM1
     }

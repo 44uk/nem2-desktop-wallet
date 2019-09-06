@@ -67,8 +67,8 @@
       <div class="left_echart radius">
         <span class="trend">{{$t('XEM_market_trend_nearly_7_days')}}</span>
         <span class="right">
-          <span>{{$t('The_total_market_capitalization')}}（USD）</span>
-          <span class="black">{{formatNumber(currentPrice)}}</span>
+          <span>{{$t('The_total_market_capitalization')}} (USD)</span>
+          <span class="black">{{formatNumber(xemUsdPrice)}}</span>
         </span>
         <div>
           <span class="right">
@@ -98,19 +98,19 @@
 
     <div class="bottom_transactions radius scroll" ref="bottomTransactions">
       <div class="splite_page">
-        <span>{{$t('total')}}：{{currentDataAmount}} {{$t('data')}}</span>
-        <Page @on-change="changePage" :total="currentDataAmount" class="page_content"/>
+        <span>{{$t('total')}}：{{selectedListLength}} {{$t('data')}}</span>
+        <Page @on-change="changePage" :total="selectedListLength" class="page_content"/>
       </div>
 
       <div class="label_page">
         <span @click="switchTransactionPanel(true)"
               :class="['pointer',isShowTransferTransactions?'selected':'','page_title']">
-          {{$t('transfer_record')}} ({{transferListLength}})
+          {{$t('transfer_record')}} ({{transferTransactionList.length}})
         </span>
         <span class="line">|</span>
         <span @click="switchTransactionPanel(false)"
               :class="['pointer',isShowTransferTransactions?'':'selected','page_title']">
-          {{$t('receipt')}} ({{receiptListLength}})
+          {{$t('receipt')}} ({{receiptTransactionList.length}})
         </span>
       </div>
 
@@ -123,12 +123,12 @@
             <span class="date">{{$t('date')}}</span>
           </div>
           <div class="confirmed_transactions">
-            <Spin v-if="isLoadingTransactions" size="large" fix class="absolute"></Spin>
+            <Spin v-if="transactionsLoading" size="large" fix class="absolute"></Spin>
             <div class="table_body hide_scroll" ref="confirmedTableBody">
               <div
                 class="table_item pointer"
                 @click="showDialog(c,true)"
-                v-for="(c, index) in currentTransactionList"
+                v-for="(c, index) in slicedTransferList"
                 :key="index"
               >
                 <img class="mosaic_action" v-if="!c.isReceipt"
@@ -145,14 +145,13 @@
                 <img v-else src="@/common/img/monitor/dash-board/dashboardConfirmed.png"
                      class="expand_mosaic_info">
               </div>
-              <div class="no_data" v-if="transferTransactionList.length == 0">
+              <div class="no_data" v-if="!transferTransactionList.length">
                 {{$t('no_confirmed_transactions')}}
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <div class="table_container_unconfirmed table_container" v-if="!isShowTransferTransactions">
         <div class="all_transaction">
           <div class="table_head">
@@ -162,10 +161,14 @@
             <span class="date">{{$t('date')}}</span>
           </div>
           <div class="unconfirmed_transactions">
-            <Spin v-if="isLoadingTransactions" size="large" fix class="absolute"></Spin>
+            <Spin v-if="transactionsLoading" size="large" fix class="absolute"></Spin>
             <div class="table_body hide_scroll" ref="unconfirmedTableBody">
-              <div class="table_item pointer" @click="showDialog(u,false)" v-for="(u,index) in currentTransactionList"
-                   :key="index">
+              <div
+                class="table_item pointer"
+                @click="showDialog(u, false)"
+                v-for="(u, index) in slicedReceiptsLists"
+                :key="index"
+              >
                 <img class="mosaic_action"
                      :src="u.icon" alt="">
                 <span class="account overflow_ellipsis">{{$t(u.tag)}}</span>
@@ -177,7 +180,7 @@
                 <img v-else src="@/common/img/monitor/dash-board/dashboardConfirmed.png"
                      class="expand_mosaic_info">
               </div>
-              <div class="no_data" v-if="receiptList.length == 0">
+              <div class="no_data" v-if="!receiptTransactionList.length">
                 {{$t('no_unconfirmed_transactions')}}
               </div>
             </div>

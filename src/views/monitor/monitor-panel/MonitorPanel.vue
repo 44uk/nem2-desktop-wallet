@@ -1,7 +1,5 @@
 <template>
   <div class="monitor_panel_container">
-    {{ mosaicMap }}
-
     <div class="monitor_panel_left_container" ref="monitorPanelLeftContainer">
       <div class="top_wallet_address radius">
         <Spin v-if="isLoadingBalance" size="large" fix class="absolute"></Spin>
@@ -18,11 +16,11 @@
           <span>XEM</span>
           <span class="amount">{{formatNumber(Number(formatXEMamount(XEMamount))?formatXEMamount(XEMamount + ''):0)}}</span>
         </div>
-        <div class="exchange">${{formatNumber(XEMamount*currentPrice?(XEMamount*currentPrice).toFixed(2).toLocaleString():'0.00')}}</div>
-
-        <div class="account_alias" v-show="isShowAccountAlias">
+        <div class="exchange">${{formatNumber(XEMamount*xemUsdPrice?(XEMamount*xemUsdPrice).toFixed(2).toLocaleString():'0.00')}}</div>
+        <!-- @TODO: Account Alias (update when method available) -->
+        <!--<div class="account_alias" v-show="isShowAccountAlias">
           {{$t('alias')}}：wallet.name
-        </div>
+        </div>-->
       </div>
       <div class="bottom_account_info radius" ref="bottomAccountInfo">
         <div v-if="isShowAccountInfo" class="mosaicListWrap">
@@ -108,7 +106,6 @@
         <router-view/>
       </div>
       <div class="transaction_status radius" />
-
     </div>
   </div>
 </template>
