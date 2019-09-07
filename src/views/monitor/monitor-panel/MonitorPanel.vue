@@ -2,7 +2,7 @@
   <div class="monitor_panel_container">
     <div class="monitor_panel_left_container" ref="monitorPanelLeftContainer">
       <div class="top_wallet_address radius">
-        <Spin v-if="isLoadingBalance" size="large" fix class="absolute"></Spin>
+        <Spin v-if="balanceLoading" size="large" fix class="absolute"></Spin>
         <div class="wallet_address">
           <span class="address">
             {{address}}
@@ -24,7 +24,7 @@
       </div>
       <div class="bottom_account_info radius" ref="bottomAccountInfo">
         <div v-if="isShowAccountInfo" class="mosaicListWrap">
-          <Spin v-if="isLoadingMosaic" size="large" fix class="absolute"></Spin>
+          <Spin v-if="mosaicsLoading" size="large" fix class="absolute"></Spin>
           <Tabs size="small" v-if="!isShowManageMosaicIcon">
             <TabPane :label="$t('assets')" name="name1">
               <img @click="manageMosaicList()" class="asset_list pointer"

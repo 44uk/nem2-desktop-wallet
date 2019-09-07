@@ -19,7 +19,6 @@ export class MonitorPanelTs extends Vue {
     activeAccount: any
     mosaic: string
     mosaicName = ''
-    // @TODO: Put current price in the store
     isShowAccountInfo = true
     // isShowAccountAlias = false @TODO: Account Alias (update when method available)
     isShowManageMosaicIcon = false
@@ -32,11 +31,11 @@ export class MonitorPanelTs extends Vue {
         return this.app.xemUsdPrice
     }
 
-    get isLoadingBalance() {
+    get balanceLoading() {
         return this.app.balanceLoading
     }
 
-    get isLoadingMosaic() {
+    get mosaicsLoading() {
         return this.app.mosaicsLoading
     }
 
@@ -68,6 +67,7 @@ export class MonitorPanelTs extends Vue {
         return this.activeAccount.currentXEM2
     }
 
+    // @TODO: review
     switchPanel(index) {
         if (this.navigatorList[index].disabled) {
             return
@@ -102,11 +102,6 @@ export class MonitorPanelTs extends Vue {
         })
     }
 
-    // @TODO: probably not necessary
-    initData() {
-        this.$store.commit('SET_CURRENT_PANEL_INDEX', 0)
-    }
-
     showMosaicMap() {
         this.isShowManageMosaicIcon = !this.isShowManageMosaicIcon
     }
@@ -125,10 +120,6 @@ export class MonitorPanelTs extends Vue {
         return formatNumber(number)
     }
 
-    initLeftNavigator() {
-        this.$store.commit('SET_CURRENT_PANEL_INDEX', 0)
-    }
-
     searchMosaic() {
         // @TODO: Query the network for mosaics that are not in the mosaicMap
         if (this.mosaicName == '') {
@@ -142,18 +133,8 @@ export class MonitorPanelTs extends Vue {
         this.$Notice.error({title: this.$t(message) + ''})
     }
 
-    setLeftSwitchIcon() {
-        this.$store.commit('SET_CURRENT_PANEL_INDEX', 0)
-    }
-
     formatXEMamount(text) {
         return formatXEMamount(text)
-    }
-
-    @Watch('getWallet')
-    onGetWalletChange(n, o) {
-        if (!n.address || n.address === o.address) return
-        this.initData() // @TODO: probably not necessary
     }
 
     @Watch('mosaicName')
@@ -171,9 +152,7 @@ export class MonitorPanelTs extends Vue {
     }
 
     mounted() {
+        // @TODO: review
         this.switchPanel(0)
-        this.setLeftSwitchIcon()
-        this.initLeftNavigator()
-        this.initData() // @TODO: probably not necessary
     }
 }
