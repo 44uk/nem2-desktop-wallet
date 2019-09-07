@@ -37,7 +37,7 @@ export class CollectionRecordTs extends Vue {
 
     get transactionsLoading() {
         return this.app.transactionsLoading
-    }    
+    }
 
     get confirmedTransactionList() {
         return this.activeAccount.transactionList.transferTransactionList
@@ -62,7 +62,7 @@ export class CollectionRecordTs extends Vue {
         return formatNumber(number)
     }
 
-    initDialogData(transaction) {
+    showDialog(transaction) {
         this.isShowDialog = true
         this.transactionDetails = [
             {
