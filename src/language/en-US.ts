@@ -134,7 +134,7 @@ export const en_US = {
     generate_QR_code: 'Generate QR code',
     copy_address: 'Copy address',
     copy_QR_code: 'Copy QR code',
-    collection_record: 'Collection record',
+    collection_record: 'Transfers received',
     enter_asset_type_alias_or_address_search: 'Enter transaction hash search',
     ordinary_transfer: 'Transfer',
     Multisign_transfer: 'Multisig',
@@ -183,7 +183,7 @@ export const en_US = {
 //   monitor-transfer
     transfer_target: 'To',
     send: 'Send',
-    transfer_record: 'Transfer records',
+    transfer_record: 'Transfers sent',
     receive_address_or_alias: 'Receive address or @+alias（@nem.xem）',
     please_enter_the_transfer_amount: 'Please enter the transfer amount',
     please_enter_a_comment: 'Please enter a comment',

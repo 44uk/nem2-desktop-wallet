@@ -6,6 +6,7 @@ import {
     getRelativeMosaicAmount
 } from '@/core/utils/utils.ts'
 import {mapState} from "vuex"
+import {TransferType} from '@/config/index.ts'
 
 @Component({
     computed: {...mapState({activeAccount: 'account', app: 'app'})},
@@ -21,6 +22,7 @@ export class CollectionRecordTs extends Vue {
     unConfirmedTransactionList = [] // @TODO unconfirmed transactions
     currentMonth: string = ''
     transactionDetails: any = []
+    TransferType = TransferType
 
     @Prop({
         default: () => {
@@ -28,6 +30,11 @@ export class CollectionRecordTs extends Vue {
         }
     })
     transactionType
+
+    get wallet() {
+        return this.activeAccount.wallet
+    }
+
     get transactionsLoading() {
         return this.app.transactionsLoading
     }    
@@ -38,12 +45,12 @@ export class CollectionRecordTs extends Vue {
 
     get slicedConfirmedTransactionList() {
         const {currentMonthFirst, currentMonthLast, confirmedTransactionList} = this
-        return [...confirmedTransactionList]
-            .filter(item => (item.date <= currentMonthLast && item.date >= currentMonthFirst))
-    }
-
-    get getWallet() {
-        return this.activeAccount.wallet
+        const filteredByDate = [...confirmedTransactionList]
+        .filter(item => (item.date <= currentMonthLast && item.date >= currentMonthFirst))
+        if (!filteredByDate.length) return []
+        return this.transactionType === TransferType.SENT
+            ? filteredByDate.filter(({tag}) => tag === 'payment')
+            : filteredByDate.filter(({tag}) => tag !== 'payment')
     }
 
     changeCurrentMonth(e) {
@@ -99,7 +106,7 @@ export class CollectionRecordTs extends Vue {
         this.currentMonth = (new Date()).getFullYear() + '-' + ((new Date()).getMonth() + 1)
     }
 
-    @Watch('getWallet.address')
+    @Watch('wallet.address')
     onGetWalletChange() {
         this.setCurrentMonth()
     }

@@ -20,7 +20,8 @@
 
 
     <div class="top_title">
-      <span>azdazd{{transactionType == 1 ?$t('collection_record'):$t('transfer_record')}}</span>
+      <span>{{transactionType === TransferType.RECEIVED
+          ? $t('collection_record') : $t('transfer_record')}}</span>
       <div class="right" v-show="!isShowSearchDetail">
             <span class="select_date pointer">
               <div class="month_value">

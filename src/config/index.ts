@@ -15,7 +15,6 @@ import namespace2Icon from "@/common/img/service/namespace2.png"
 import apostille1Icon from "@/common/img/service/apostille1.png"
 import apostille2Icon from "@/common/img/service/apostille2.png"
 import {echartsConfigure as echartsConfigureData} from '@/config/echarts.ts'
-import {veeValidateConfig} from "@/core/validation"
 
 export const echartsConfigure = echartsConfigureData
 
@@ -52,7 +51,7 @@ export const languageList: Array<any> = [
 
 export const TransferType = {
     'RECEIVED': 1,
-    'SENDED': 0
+    'SENT': 0
 }
 export const networkTypeList = [
     {
