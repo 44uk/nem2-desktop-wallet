@@ -226,6 +226,7 @@ const formatTransferTransactions = function (transaction, accountAddress, curren
         transaction.infoThird = 'loading...'
     }
     transaction.time = formatNemDeadline(transaction.deadline)
+    transaction.date = new Date(transaction.time)
     transaction.dialogDetailMap = {
         'transfer_type': transaction.tag,
         'from': transaction.infoFirst,
@@ -237,7 +238,7 @@ const formatTransferTransactions = function (transaction, accountAddress, curren
     }
     return transaction
 }
- 
+
 // @TODO: check if use that for divisibility (from monitorDashboard)
 // showDialog(transaction, isTransferTransaction?: boolean) {
 //     let MosaicDivisibilityMap = {}

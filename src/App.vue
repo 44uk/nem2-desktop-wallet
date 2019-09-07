@@ -452,7 +452,39 @@
     }
 
 
-
+    // async getUnConfirmedTransactions() {
+    //     const that = this
+    //     let {accountPublicKey, currentXEM1, accountAddress, node, transactionType} = this
+    //     const publicAccount = PublicAccount.createFromPublicKey(accountPublicKey, this.getWallet.networkType)
+    //     await new TransactionApiRxjs().unconfirmedTransactions(
+    //         publicAccount,
+    //         {
+    //             pageSize: 100
+    //         },
+    //         node,
+    //     ).subscribe(async (transactionsInfo) => {
+    //         let transferTransactionList = formatTransactions(transactionsInfo, accountAddress, currentXEM1)
+    //         // get transaction by choose recript tx or send
+    //         if (transactionType == TransferType.RECEIVED) {
+    //             transferTransactionList.forEach((item) => {
+    //                 if (item.isReceipt) {
+    //                     that.localUnConfirmedTransactions.push(item)
+    //                 }
+    //             })
+    //             that.getRelativeMosaicByTransaction(that.localConfirmedTransactions, node)
+    //             that.onCurrentMonthChange()
+    //             that.isLoadingTransactionRecord = false
+    //             return
+    //         }
+    //         transferTransactionList.forEach((item) => {
+    //             if (!item.isReceipt) {
+    //                 that.localUnConfirmedTransactions.push(item)
+    //             }
+    //         })
+    //         that.onCurrentMonthChange()
+    //         that.isLoadingTransactionRecord = false
+    //     })
+    // }
 /*
     ----------------------
     TODOs
