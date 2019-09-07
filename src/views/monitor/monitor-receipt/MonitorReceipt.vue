@@ -26,7 +26,7 @@
           <textarea></textarea>
         </span>
       </div>
-      <div @click="genaerateQR()" class="send_button pointer">
+      <div @click="generateQR()" class="send_button pointer">
         {{$t('generate_QR_code')}}
       </div>
     </Modal>
