@@ -12,16 +12,21 @@ import {MessageType} from "nem2-sdk/dist/src/model/transaction/MessageType"
 
 @Component({
     components: {CheckPWDialog, ErrorTooltip},
-    computed: {...mapState({activeAccount: 'account'})},
+        computed: {
+        ...mapState({
+            activeAccount: 'account',
+            app: 'app',
+        })
+    },
 })
 export default class TransferTransactionTs extends Vue {
     @Provide() validator: any = this.$validator
+    app: any
     activeAccount: any
     isShowSubAlias = false
     standardFields: object = standardFields
     errors: any
     submitDisabled: boolean = false
-    mosaicList = []
     transactionList = []
     transactionDetail = {}
     showCheckPWDialog = false
@@ -37,6 +42,9 @@ export default class TransferTransactionTs extends Vue {
         return this.activeAccount.wallet
     }
 
+    get mosaicsLoading() {
+        return this.app.mosaicsLoading
+    }
 
     get accountAddress() {
         return this.activeAccount.wallet.address
@@ -58,6 +66,17 @@ export default class TransferTransactionTs extends Vue {
         return this.activeAccount.mosaicMap
     }
 
+    get mosaicList() {
+        // @TODO: would be better to return a loading indicator
+        // instead of an empty array ([] = "no matching data" in the select dropdown)
+        const {mosaicMap} = this
+        if (this.mosaicsLoading || !mosaicMap) return []
+        return Object.keys(this.mosaicMap).map(mosaic => ({
+            label: `${mosaicMap[mosaic].name} (${mosaicMap[mosaic].amount})`,
+            value: mosaicMap[mosaic].hex,
+        }))
+    }
+
     get addresAliasMap() {
         const addresAliasMap = this.activeAccount.addresAliasMap
         for (let item in addresAliasMap) {
@@ -67,7 +86,6 @@ export default class TransferTransactionTs extends Vue {
         this.isAddressMapNull = true
         return addresAliasMap
     }
-
 
     get xemDivisibility() {
         return this.activeAccount.xemDivisibility
@@ -154,16 +172,6 @@ export default class TransferTransactionTs extends Vue {
         this.transactionList = [transaction]
     }
 
-    async initMosaic() {
-        const {mosaicMap} = this
-        for (let key in mosaicMap) {
-            this.mosaicList.push({
-                label: mosaicMap[key].name + `(${mosaicMap[key].amount})`,
-                value: mosaicMap[key].hex,
-            })
-        }
-    }
-
     closeCheckPWDialog() {
         this.showCheckPWDialog = false
     }
@@ -179,16 +187,11 @@ export default class TransferTransactionTs extends Vue {
     @Watch('accountAddress')
     onAcountAddressChange() {
         this.resetFields()
-        this.initMosaic()
     }
 
     @Watch('errors.items')
     onErrorsChanged() {
         this.submitDisabled = this.errors.items.length > 0
-    }
-
-    created() {
-        this.initMosaic()
     }
 
     mounted() {

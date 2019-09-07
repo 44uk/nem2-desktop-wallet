@@ -279,21 +279,22 @@
                         showInManage: true
                     }
                 })
-                this.namespaceList.forEach((item) => {
-                    switch (item.alias.type) {
-                        case aliasType.mosaicAlias:
-                            const mosaicHex = new MosaicId(item.alias.mosaicId).toHex()
-                            if (mosaicMap[mosaicHex]) {
-                                mosaicMap[mosaicHex].name = item.label
-                            }
-                            break
-                        case  aliasType.addressAlias:
-                            //@ts-ignore
-                            const address = Address.createFromEncoded(item.alias.address).address
-                            addressMap[address] = item
-                            break
-                    }
-                })
+                // @TODO: namespaceList is not defined at this stage
+                // this.namespaceList.forEach((item) => {
+                //     switch (item.alias.type) {
+                //         case aliasType.mosaicAlias:
+                //             const mosaicHex = new MosaicId(item.alias.mosaicId).toHex()
+                //             if (mosaicMap[mosaicHex]) {
+                //                 mosaicMap[mosaicHex].name = item.label
+                //             }
+                //             break
+                //         case  aliasType.addressAlias:
+                //             //@ts-ignore
+                //             const address = Address.createFromEncoded(item.alias.address).address
+                //             addressMap[address] = item
+                //             break
+                //     }
+                // })
                 that.updateMosaicMap(mosaicMap)
                 this.$store.commit('SET_ADDRESS_ALIAS_MAP', addressMap)
                 if (mosaicList.length > 0) {
@@ -408,7 +409,7 @@
                             await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
 
                             const res = await Promise.all([
-                                new AppWallet(newWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store),
+                                // new AppWallet(newWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store),
                                 // @TODO mape AppWallet methods
                                 this.initMosaic(),
                                 getNamespaces(newWallet.address, this.node),
