@@ -94,10 +94,6 @@
             return this.activeAccount.wallet.address
         }
 
-        // get test() {
-        //     return 
-        // }
-
         // App init
         // Endpoint change
         // SET_IS_NODE_HEALTHY set to false
