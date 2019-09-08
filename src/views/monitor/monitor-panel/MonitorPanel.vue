@@ -33,17 +33,17 @@
               <div class="mosaicList secondary_page_animate">
                 <div
                   class="mosaic_data"
-                  v-for="(value,key,index) in mosaicMap"
+                  v-for="(mosaic, index) in mosaics"
                   :key="index"
-                  v-if="value.show"
+                  v-if="mosaic.show"
                 >
                   <span class="img_container">
                     <img v-if="index == 0" src="@/common/img/monitor/monitorMosaicIcon.png" alt="">
                     <img v-else src="@/common/img/monitor/mosaicDefault.png" alt="">
                   </span>
-                  <span class="mosaic_name">{{value.name?value.name:key}}</span>
+                  <span class="mosaic_name">{{mosaic.name || mosaic.hex}}</span>
                   <span class="mosaic_value">
-                    <div>{{formatNumber(value.amount.lower?value.amount.compact():value.amount)}}</div>
+                    <div>{{formatNumber(mosaic.amount)}}</div>
                   </span>
                 </div>
               </div>
@@ -64,21 +64,20 @@
             </div>
             <div class="mosaicList">
               <div
-                v-if="value.showInManage"
-                v-for="(value, key, index) in mosaicMap"
+                v-for="(mosaic, index) in filteredList"
                 :key="index"
                 class="mosaic_data"
               >
                 <span class="namege_img">
-                  <img @click="toggleShowMosaic(key,value)" class="small_icon pointer"
-                        :src="value.show?monitorSeleted:monitorUnselected">
+                  <img @click="toggleShowMosaic(mosaic)" class="small_icon pointer"
+                        :src="mosaic.show?monitorSeleted:monitorUnselected">
                   <img v-if="index == 0" class="mosaicIcon"
                         src="@/common/img/monitor/monitorMosaicIcon.png">
                   <img v-else class="mosaicIcon" src="@/common/img/monitor/mosaicDefault.png">
                 </span>
-                <span class="mosaic_name">{{value.name || key}}</span>
+                <span class="mosaic_name">{{mosaic.name || mosaic.hex}}</span>
                 <span class="mosaic_value">
-                  <div>{{value.amount}}</div>
+                  <div>{{mosaic.amount}}</div>
                 </span>
               </div>
               <div class="complete_container">
