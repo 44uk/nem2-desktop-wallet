@@ -289,7 +289,7 @@ export class RootNamespaceTs extends Vue {
     }
 
     // @TODO: manage it at a higher level, put account list in the sore
-    created() {
+    mounted() {
         this.getMultisigAccountList()
     }
 }

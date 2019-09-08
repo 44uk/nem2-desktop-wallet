@@ -119,7 +119,7 @@ export class CollectionRecordTs extends Vue {
         this.currentMonthLast = getCurrentMonthLast(currentMonth)
     }
 
-    created() {
+    mounted() {
         this.setCurrentMonth()
     }
 }

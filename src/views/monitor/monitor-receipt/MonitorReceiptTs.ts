@@ -151,8 +151,7 @@ export class MonitorReceiptTs extends Vue {
         this.createQRCode()
     }
 
-    created() {
+    mounted() {
         this.createQRCode()
-
     }
 }

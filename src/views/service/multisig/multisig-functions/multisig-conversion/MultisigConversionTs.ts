@@ -234,8 +234,8 @@ export class MultisigConversionTs extends Vue {
         return
     }
 
-
-    created() {
+    // @TODO multisig account list at higher level
+    mounted() {
         this.getMultisigAccountList()
     }
 }
