@@ -49,17 +49,7 @@ export class NamespaceMosaicAliasDialogTs extends Vue {
     }
 
     get unlinkMosaicList() {
-        const mosaicMap = this.activeAccount.mosaicMap
-        let unlinkMosaicList = []
-        for (let key in mosaicMap) {
-            if (key === mosaicMap[key].name) {
-                unlinkMosaicList.push({
-                    label: key,
-                    value: key
-                })
-            }
-        }
-        return unlinkMosaicList
+        return this.activeAccount.mosaics.filter(({name})=> !name)
     }
 
     mosaicAliasDialogCancel() {

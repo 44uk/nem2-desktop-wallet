@@ -12,7 +12,6 @@ declare interface account {
     mosaic: any[],
     namespace: any[],
     errorTx: Array<any>,
-    mosaicMap: any,
     addresAliasMap: any,
     generationHash: string,
     xemDivisibility: number
@@ -30,7 +29,6 @@ export default {
         mosaic: [],
         namespace: [],
         errorTx: [],
-        mosaicMap: {},
         addresAliasMap: {},
         generationHash: '',
         xemDivisibility: 6,
@@ -68,9 +66,6 @@ export default {
         },
         SET_CURRENT_XEM_1(state: account, currentXEM1: string): void {
             state.currentXEM1 = currentXEM1
-        },
-        SET_MOSAIC_MAP(state: account, mosaicMap: any): void {
-            state.mosaicMap = mosaicMap
         },
         SET_ADDRESS_ALIAS_MAP(state: account, addresAliasMap: any): void {
             state.addresAliasMap = addresAliasMap

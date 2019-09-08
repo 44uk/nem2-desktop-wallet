@@ -229,10 +229,8 @@ export class AppWallet {
         }
     }
 
-    async updateAccountBalance(networkCurrencies: any, node: string, store: any) {
+    async updateAccountBalance(balance: number, store: any): Promise<void> {
         try {
-            store.commit('SET_BALANCE_LOADING', true)
-            const balance = await this.getAccountBalance(networkCurrencies, node)
             this.balance = balance
             this.updateWallet(store)
             store.commit('SET_BALANCE_LOADING', false)

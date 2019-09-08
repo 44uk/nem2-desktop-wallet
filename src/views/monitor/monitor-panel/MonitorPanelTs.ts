@@ -39,8 +39,8 @@ export class MonitorPanelTs extends Vue {
         return this.app.mosaicsLoading
     }
 
-    get mosaicMap() {
-        return this.activeAccount.mosaicMap
+    get mosaics() {
+        return this.activeAccount.mosaic
     }
 
     get getWallet() {
@@ -65,6 +65,15 @@ export class MonitorPanelTs extends Vue {
 
     get currentXEM2() {
         return this.activeAccount.currentXEM2
+    }
+
+    get filteredList() {
+        const {mosaics, mosaicName} = this
+        const newList = [...mosaics]
+        return newList.filter(mosaic => (
+            mosaic.name && mosaic.name.indexOf(mosaicName) > -1
+                || mosaic.hex.indexOf(mosaicName) > -1
+        ))
     }
 
     // @TODO: review
@@ -106,13 +115,11 @@ export class MonitorPanelTs extends Vue {
         this.isShowManageMosaicIcon = !this.isShowManageMosaicIcon
     }
 
-    toggleShowMosaic(key, value) {
-        const updatedMap = {...this.mosaicMap}
-        if (!updatedMap[key]) return
-        const updatedMosaic = {...value}
-        updatedMosaic.show = !updatedMosaic.show
-        updatedMap[key] = updatedMosaic
-        this.$store.commit('SET_MOSAIC_MAP', updatedMap)
+    toggleShowMosaic(mosaic) {
+        const updatedList = [...this.mosaics]
+        const mosaicIndex = updatedList.findIndex(({hex})=>mosaic.hex === hex)
+        updatedList[mosaicIndex].show = !updatedList[mosaicIndex].show
+        this.$store.commit('SET_MOSAICS', updatedList)
     }
 
     // @TODO: move to formatTransaction
@@ -121,7 +128,7 @@ export class MonitorPanelTs extends Vue {
     }
 
     searchMosaic() {
-        // @TODO: Query the network for mosaics that are not in the mosaicMap
+        // @TODO: Query the network for mosaics that are not in the mosaic list
         if (this.mosaicName == '') {
             this.showErrorMessage(Message.MOSAIC_NAME_NULL_ERROR)
             return
@@ -135,20 +142,6 @@ export class MonitorPanelTs extends Vue {
 
     formatXEMamount(text) {
         return formatXEMamount(text)
-    }
-
-    @Watch('mosaicName')
-    onMosaicNameChange() {
-        // @TODO: do not mutate mosaicMap outside of a mutation handler
-        // @TODO: make a new Set() {mosaicMapKey: show: bool} instead
-        const {mosaicMap, mosaicName} = this
-        for (const item in mosaicMap) {
-            if (item.indexOf(mosaicName) !== -1 || mosaicMap[item].name.indexOf(mosaicName) !== -1) {
-                mosaicMap[item].showInManage = true
-                continue
-            }
-            mosaicMap[item].showInManage = false
-        }
     }
 
     mounted() {

@@ -201,7 +201,6 @@
     
 
 
-            // let mosaicMap = {}
             // let addressMap = {}
 
             
@@ -217,14 +216,16 @@
 
 
         // @TODO: move out from there
-        async initMosaic(add) {
-            const address = Address.createFromRawAddress(add)
-            this.$store.commit('SET_MOSAIC_LOADING', true)
-            let {accountAddress, node, currentXem} = this
+        async initMosaic(wallet) {
+            const address = Address.createFromRawAddress(wallet.address)
+            await Promise.all([
+                this.$store.commit('SET_MOSAIC_LOADING', true),
+                this.$store.commit('SET_BALANCE_LOADING', true),
+            ])
 
+            let {accountAddress, node, currentXem} = this
             const mosaicList: any = await getMosaicList(accountAddress, node)
             const mosaicHexIds = mosaicList.map(item => item.id.toHex())
-
             const mosaicInfoList = await getMosaicInfoList(node, mosaicList)
 
             // @TODO: move out from there and set @generationHash change
@@ -239,13 +240,9 @@
 
             // @TODO: probably not useful
             this.$store.commit('SET_XEM_DIVISIBILITY', networkMosaicInfo.divisibility)
-
-            const getName = (hexId: string) => {
-                return hexId === networkMosaicId ? currentXem : false
-            } 
+            const getName = (hexId: string): string|false => hexId === networkMosaicId ? currentXem : false
 
             const mosaicService = new MosaicService(new AccountHttp(node), new MosaicHttp(node));
-
             const mosaics = await mosaicService.mosaicsAmountViewFromAddress(address)
                 .pipe(
                     flatMap(x => x),
@@ -264,13 +261,19 @@
                     flatMap(x => x),
                     map(x => {
                         const hex = x.mosaicInfo.mosaicId.toHex()
+                        // @TODO: Why duplicate divisibility
                         const divisibility = x.mosaicInfo.divisibility
+                        const amount = getRelativeMosaicAmount(x.amount.compact(), divisibility)
+
+                        if (hex === networkMosaicId) new AppWallet(wallet)
+                            .updateAccountBalance(amount, this.$store)
+
                         // @TODO make this object an interface
                         return {
-                            x,
+                            ...x,
                             hex,
                             name: getName(hex),
-                            amount: getRelativeMosaicAmount(x.amount.compact(), divisibility),
+                            amount,
                             divisibility,
                             show: true,
                             showInManage: true,
@@ -345,11 +348,6 @@
         //     console.log(e)
         // }
 
-        updateMosaicMap(mosaicMap) {
-            this.$store.commit('SET_MOSAIC_MAP', mosaicMap)
-            this.$store.commit('SET_WALLET_BALANCE', mosaicMap[this.currentXEM1].amount)
-        }
-
         mounted() {
             this.setWalletsBalancesAndMultisigStatus()
             this.getMarketOpenPrice()
@@ -360,7 +358,7 @@
                 } else {
                     this.chainListeners.switchAddress(this.wallet.address)
                 }
-                this.initMosaic(this.wallet.address )
+                this.initMosaic(this.wallet)
                 this.setTransferTransactionList(this.wallet.address)
             }
 
@@ -391,9 +389,8 @@
                             await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
 
                             const res = await Promise.all([
-                                new AppWallet(newWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store),
                                 // @TODO mape AppWallet methods
-                                this.initMosaic(newWallet.address),
+                                this.initMosaic(newWallet),
                                 getNamespaces(newWallet.address, this.node),
                                 this.setTransferTransactionList(newWallet.address)
                             ])
@@ -499,7 +496,6 @@
 
     // MonitorPanel
     this.initMosaic()
-    new AppWallet(this.getWallet).updateAccountBalance(this.networkCurrencies, this.node, this.$store)
     this.getAccountsName()
     this.getMyNamespaces()
 
