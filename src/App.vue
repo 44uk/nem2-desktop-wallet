@@ -368,6 +368,43 @@
                     this.setTransferTransactionList(newWallet.address)
                 ])
                 this.$store.commit('SET_NAMESPACE', res[1] || [])
+
+                // Get all mosaics from transactions
+                const {transferTransactionList} = this.activeAccount.transactionList
+                const mosaicsFromBalance = this.activeAccount.mosaic
+                const mosaicsInTransfers = transferTransactionList.map(({mosaics})=>mosaics)
+                const mosaicsHexIds = [].concat(...mosaicsInTransfers).map(({id})=> id.toHex())
+                const uniqueMosaicsInTransfers = Array.from(new Set(mosaicsHexIds))
+                const mosaicsToQuery = uniqueMosaicsInTransfers
+                    .filter(mosaicId => mosaicsFromBalance
+                    .findIndex(({hex}) => hex === mosaicId) === -1)
+
+                // @TODO: Query mosaicInfo
+                // @TODO: mosaics named by someone else
+                const augmentedTransactionList = transferTransactionList
+                    .map(tx => {return {...tx, mosaics: tx.mosaics
+                    .map(mosaic => {
+                        const newMosaic = mosaicsFromBalance.find(({hex}) => hex === mosaic.id.toHex())
+                        delete newMosaic.amount
+                        if (newMosaic === undefined) return
+                        return {...mosaic, ...newMosaic}
+                    })}})
+                    .map(tx =>  (
+                        tx.mosaics.length === 1
+                            ? {
+                                ...tx,
+                                infoThird: getRelativeMosaicAmount(
+                                    tx.mosaics[0].amount.compact(),
+                                    tx.mosaics[0].divisibility,
+                                )
+                            }
+                            : tx
+                    ))
+
+                this.$store.commit('SET_TRANSACTION_LIST', {
+                    transferTransactionList: augmentedTransactionList,
+                    receiptList: this.activeAccount.transactionList.receiptList
+                })
             } catch (error) {
                 console.error(error, 'ERROR')
             }
@@ -440,14 +477,6 @@
             }
         }
     }
-    // async getMyNamespaces() {
-    //     if (!this.wallet.address) {
-    //         this.$store.commit('SET_NAMESPACE', [])
-    //         return
-    //     }
-    //     const list = await getNamespaces(this.wallet.address, this.node)
-    //     this.$store.commit('SET_NAMESPACE', list)
-    // }
 
     // async getUnConfirmedTransactions() {
     //     const that = this
@@ -501,11 +530,7 @@
     // MosaicList
     this.initMosaic()
 
-    // WalletPanel
-    this.getMyNamespaces()
 
-    // NamespaceTs
-    this.getMyNamespaces()
 
     // CollectionRecord
     this.isLoadingTransactionRecord = true
