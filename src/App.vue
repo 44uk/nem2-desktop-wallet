@@ -16,7 +16,7 @@
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
     import {ListenerApiRxjs} from '@/core/api/ListenerApiRxjs.ts'
-    import {Component, Vue} from 'vue-property-decorator'
+    import {Component, Vue, Watch} from 'vue-property-decorator'
     import {mapState} from 'vuex'
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
     import {ChainListeners} from '@/core/services/listeners'
@@ -25,12 +25,13 @@
     import {KlineQuery} from "@/core/query/klineQuery.ts"
     import {TransactionApiRxjs} from '@/core/api/TransactionApiRxjs.ts'
     import {transactionFormat} from '@/core/utils/format.ts'
-    import {toArray, flatMap, concatMap, map, tap} from 'rxjs/operators'
+    import {from, interval, asyncScheduler} from 'rxjs'
+    import {toArray, flatMap, concatMap, map, tap, throttleTime} from 'rxjs/operators'
 
     @Component({
         computed: {
-            ...mapState({activeAccount: 'account', app: 'app'})
-        }
+            ...mapState({activeAccount: 'account', app: 'app'}),
+        },
     })
     export default class App extends Vue {
         isWindows = isWindows
@@ -92,6 +93,11 @@
         get accountAddress() {
             return this.activeAccount.wallet.address
         }
+
+        // get test() {
+        //     return 
+        // }
+
         // App init
         // Endpoint change
         // SET_IS_NODE_HEALTHY set to false
@@ -318,6 +324,7 @@
             if (!accountPublicKey || accountPublicKey.length < 64) return
             const publicAccount = PublicAccount
                 .createFromPublicKey(accountPublicKey, NetworkType.MIJIN_TEST)
+
             new TransactionApiRxjs().transactions(
                 publicAccount,
                 {
@@ -348,7 +355,48 @@
         //     console.log(e)
         // }
 
+        async onWalletChange(newWallet) {
+            if (!this.chainListeners) {
+                this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
+                this.chainListeners.start()
+            } else {
+                this.chainListeners.switchAddress(newWallet.address)
+            }
+            try {
+                await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
+
+                const res = await Promise.all([
+                    // @TODO make it an AppWallet methods
+                    this.initMosaic(newWallet),
+                    getNamespaces(newWallet.address, this.node),
+                    this.setTransferTransactionList(newWallet.address)
+                ])
+                this.$store.commit('SET_NAMESPACE', res[1] || [])
+            } catch (error) {
+                console.error(error, 'ERROR')
+            }
+        }
+
         mounted() {
+            this.$watchAsObservable('wallet')
+                .pipe(
+                    throttleTime(5000,asyncScheduler, {leading: true, trailing: true}),
+                ).subscribe(({newValue, oldValue}) => {
+                    /**
+                     * On No Wallet Set
+                     */
+                    if(!newValue || !newValue.address) {
+                        // @TODO: no wallet available
+                    }
+                    
+                    /**
+                     * On Wallet Change
+                     */
+                    if (newValue.address !== oldValue.address) {
+                        this.onWalletChange(newValue)
+                    }
+                })
+
             this.setWalletsBalancesAndMultisigStatus()
             this.getMarketOpenPrice()
             if (this.wallet && this.wallet.address) {
@@ -364,44 +412,11 @@
 
             this.$Notice.config({ duration: 4 })
 
-            this.$store.watch(
-                (state, getters) => getters.wallet,
-                async (newWallet, oldWallet) => {
-                    /**
-                     * On No Wallet Set
-                     */
-                    if(!newWallet || !newWallet.address) {
-                        // @TODO: no wallet available
-                    }
-                    
-                    /**
-                     * On Wallet Change
-                     */
-                    if (newWallet.address !== oldWallet.address) {
-                        console.log('on wallet change,', )
-                        if (!this.chainListeners) {
-                            this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
-                            this.chainListeners.start()
-                        } else {
-                            this.chainListeners.switchAddress(newWallet.address)
-                        }
-                        try {
-                            await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
+            // this.$store.watch(
+            //     (state, getters) => getters.wallet,
+            //     (newWallet, oldWallet) => {
 
-                            const res = await Promise.all([
-                                // @TODO mape AppWallet methods
-                                this.initMosaic(newWallet),
-                                getNamespaces(newWallet.address, this.node),
-                                this.setTransferTransactionList(newWallet.address)
-                            ])
-                            this.$store.commit('SET_NAMESPACE', res[1] || [])
-                            
-                        } catch (error) {
-                            console.error(error, 'ERROR')
-                        }
-
-                    }
-            }, {deep: true})
+            // }, {deep: true})
 
 
             this.$store.subscribe((mutation, state) => {
@@ -423,7 +438,7 @@
             // @TODO: hook to onLogin event
         }
 
-        created() {
+    created() {
             if (isWindows) {
                 checkInstall()
             }
