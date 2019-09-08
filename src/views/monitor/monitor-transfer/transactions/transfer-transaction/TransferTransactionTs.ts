@@ -62,18 +62,19 @@ export default class TransferTransactionTs extends Vue {
         return this.activeAccount.generationHash
     }
 
-    get mosaicMap() {
-        return this.activeAccount.mosaicMap
+    get mosaics() {
+        return this.activeAccount.mosaic
     }
 
     get mosaicList() {
         // @TODO: would be better to return a loading indicator
         // instead of an empty array ([] = "no matching data" in the select dropdown)
-        const {mosaicMap} = this
-        if (this.mosaicsLoading || !mosaicMap) return []
-        return Object.keys(this.mosaicMap).map(mosaic => ({
-            label: `${mosaicMap[mosaic].name} (${mosaicMap[mosaic].amount})`,
-            value: mosaicMap[mosaic].hex,
+        const {mosaics} = this
+        if (this.mosaicsLoading || !mosaics) return []
+        
+        return [...mosaics].map(({name, amount, hex}) => ({
+            label: `${name||hex} (${amount})`,
+            value: hex,
         }))
     }
 
@@ -92,8 +93,17 @@ export default class TransferTransactionTs extends Vue {
     }
 
     addMosaic() {
-        const {currentMosaic, mosaicMap, currentAmount} = this
-        this.formModel.mosaicTransferList.push(new Mosaic(new MosaicId(currentMosaic), UInt64.fromUint(getAbsoluteMosaicAmount(currentAmount, mosaicMap[currentMosaic].divisibility))))
+        const {currentMosaic, mosaics, currentAmount} = this
+        const {divisibility} = mosaics.find(({hex})=> hex === currentMosaic)
+        this.formModel.mosaicTransferList
+            .push(
+                new Mosaic(
+                    new MosaicId(currentMosaic),
+                    UInt64.fromUint(
+                        getAbsoluteMosaicAmount(currentAmount, divisibility)
+                    )
+                )
+            )
     }
 
     removeMosaic(index) {
