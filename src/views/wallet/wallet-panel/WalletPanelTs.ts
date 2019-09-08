@@ -91,31 +91,13 @@ export class WalletPanelTs extends Vue {
         }
     }
 
+    // @TODO: probably not the best way
     setLeftSwitchIcon() {
         this.$store.commit('SET_CURRENT_PANEL_INDEX', 1)
-        const wallets = localRead('wallets')
-        let list = wallets ? JSON.parse(wallets) : []
-
-    }
-
-    async getMyNamespaces() {
-        if (!this.wallet.address) {
-            this.$store.commit('SET_NAMESPACE', [])
-            return
-        }
-        const list = await getNamespaces(this.wallet.address, this.node)
-        this.$store.commit('SET_NAMESPACE', list)
-    }
-
-    @Watch('wallet')
-    onGetWalletChange(n, o) {
-        if (!n.address || o.address === n.address) return
-        this.getMyNamespaces()
     }
 
     mounted() {
         this.setLeftSwitchIcon()
         this.setDefaultPage()
-        this.getMyNamespaces()
     }
 }

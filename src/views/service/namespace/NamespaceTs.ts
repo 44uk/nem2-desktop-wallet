@@ -1,4 +1,3 @@
-import {getNamespaces} from "@/core/utils/wallet"
 import {Component, Vue, Watch} from 'vue-property-decorator'
 import SubNamespace from './namespace-function/sub-namespace/SubNamespace.vue'
 import RootNamespace from './namespace-function/root-namespace/RootNamespace.vue'
@@ -37,19 +36,5 @@ export class NamespaceTs extends Vue {
         })
         list[index].isSelected = true
         this.buttonList = list
-    }
-
-    async getMyNamespaces() {
-        const list = await getNamespaces(this.getWallet.address, this.node)
-        this.$store.commit('SET_NAMESPACE', list)
-    }
-
-    @Watch('getWallet')
-    onGetWalletChange() {
-        this.getMyNamespaces()
-    }
-
-    created() {
-        this.getMyNamespaces()
     }
 }

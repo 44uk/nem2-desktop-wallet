@@ -134,13 +134,15 @@ export class MosaicAliasDialogTs extends Vue {
             password: ''
         }
     }
-
+    
+    // @TODO: use v-model
     @Watch('showMosaicAliasDialog')
     onShowMosaicAliasDialogChange() {
         this.show = this.showMosaicAliasDialog
         Object.assign(this.mosaic, this.itemMosaic)
     }
 
+    // @TODO: use v-model    
     @Watch('mosaic', {immediate: true, deep: true})
     onFormItemChange() {
         const {aliasName, fee, password} = this.mosaic

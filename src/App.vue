@@ -430,7 +430,14 @@
             }
         }
     }
-
+    // async getMyNamespaces() {
+    //     if (!this.wallet.address) {
+    //         this.$store.commit('SET_NAMESPACE', [])
+    //         return
+    //     }
+    //     const list = await getNamespaces(this.wallet.address, this.node)
+    //     this.$store.commit('SET_NAMESPACE', list)
+    // }
 
     // async getUnConfirmedTransactions() {
     //     const that = this

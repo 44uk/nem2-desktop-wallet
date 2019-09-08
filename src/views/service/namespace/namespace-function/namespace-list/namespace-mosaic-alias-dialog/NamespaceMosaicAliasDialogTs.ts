@@ -1,7 +1,6 @@
 import {Message, formData} from "@/config/index.ts"
 import {NamespaceApiRxjs} from "@/core/api/NamespaceApiRxjs.ts"
 import {Component, Vue, Prop, Watch} from 'vue-property-decorator'
-import {EmptyAlias} from "nem2-sdk/dist/src/model/namespace/EmptyAlias"
 import {AliasActionType, NamespaceId, MosaicId, Password} from "nem2-sdk"
 import {AppWallet} from "@/core/utils/wallet.ts"
 import {mapState} from "vuex"
@@ -21,7 +20,6 @@ export class NamespaceMosaicAliasDialogTs extends Vue {
     show = false
     isCompleteForm = false
     formItem: any = formData.mosaicAliasForm
-    mosaicHexList: any[] = []
 
     @Prop()
     showMosaicAliasDialog: boolean
@@ -135,26 +133,10 @@ export class NamespaceMosaicAliasDialogTs extends Vue {
         }
     }
 
-    initData() {
-        let list = []
-        this.namespaceList.map((item, index) => {
-            if (item.alias instanceof EmptyAlias) {
-                list.push(item)
-            }
-        })
-        this.mosaicHexList = list
-    }
-
     @Watch('showMosaicAliasDialog')
     onShowMosaicAliasDialogChange() {
         this.show = this.showMosaicAliasDialog
         Object.assign(this.formItem, this.itemMosaic)
-        this.initData()
-    }
-
-    @Watch('namespaceList')
-    onNamespaceListChange() {
-        this.initData()
     }
 
     @Watch('formItem', {immediate: true, deep: true})
