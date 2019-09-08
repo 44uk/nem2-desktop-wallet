@@ -394,8 +394,7 @@
                                 getNamespaces(newWallet.address, this.node),
                                 this.setTransferTransactionList(newWallet.address)
                             ])
-                                
-                            this.$store.commit('SET_NAMESPACE', res[2])
+                            this.$store.commit('SET_NAMESPACE', res[1] || [])
                             
                         } catch (error) {
                             console.error(error, 'ERROR')
