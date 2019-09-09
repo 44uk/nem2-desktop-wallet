@@ -22,13 +22,17 @@ export class ChainListeners {
     newBlocksListener: Listener
 
     start() {
-        console.log(`starting listeners for ${this.address} on ${this.node}`)
+        console.log(`starting chain listener for ${this.address} on ${this.node}`)
+        this.chainListener()
+    }
+
+    startTransactionListeners() {
+        console.log(`starting transactions listeners for ${this.address} on ${this.node}`)
         this.unconfirmedListener()
         this.confirmedListener()
         this.txErrorListener()
-        this.chainListener()
     }
-    
+
     switchAddress(address: string) {
         this.address = address
         console.log(`ChainListeners switchAddress to ${this.address}`)
@@ -67,7 +71,6 @@ export class ChainListeners {
 
     }
 
-    
     confirmedListener(): void {
         this.confirmedTxListener && this.confirmedTxListener.close()
         const {confirmedTxList, unconfirmedTxList} = this
@@ -123,7 +126,6 @@ export class ChainListeners {
     }
 
     chainListener() {
-        console.log('chainListener called', this, this.newBlocksListener)
         const store = this.app.$store
         this.newBlocksListener && this.newBlocksListener.close()
         this.newBlocksListener = new Listener(this.node, WebSocket)

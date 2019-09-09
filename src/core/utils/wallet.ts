@@ -188,11 +188,6 @@ export class AppWallet {
         // this.$emit('hasWallet')
     }
 
-    // storeWalletList(store: any, walletList: AppWallet[]) {
-    //   store.commit('SET_WALLET_LIST', walletList)
-    //   localSave('wallets', JSON.stringify(walletList))
-    // }
-
     static switchWallet(newActiveWalletAddress: string, walletList: any, store: any) {
         const newWalletIndex = walletList.findIndex(({address}) => address === newActiveWalletAddress)
         if (newWalletIndex === -1) throw new Error('wallet not found when switching')
@@ -222,7 +217,6 @@ export class AppWallet {
             const xemIndex = accountInfo.mosaics
                 .findIndex(mosaic => networkCurrencies.indexOf(mosaic.id.toHex()) > -1)
             if (xemIndex === -1) return 0
-            // @TODO: handle divisibility
             return accountInfo.mosaics[xemIndex].amount.compact() / 1000000
         } catch (error) {
             return 0
@@ -254,7 +248,7 @@ export class AppWallet {
         newWalletList[newWalletIndex] = this
 
         store.commit('SET_WALLET_LIST', newWalletList)
-        store.commit('SET_WALLET', this)
+        if(store.state.account.address === this.address) store.commit('SET_WALLET', this)
         localSave('wallets', JSON.stringify(newWalletList))
     }
 

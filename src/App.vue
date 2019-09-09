@@ -173,10 +173,8 @@
                 const walletListWithBalances = [...walletListFromStorage].map((wallet, i) => ({...wallet, balance: balances[i]}))
                 const activeWalletWithBalance = walletListWithBalances.find(wallet => wallet.address === this.wallet.address)
                 if (activeWalletWithBalance === undefined) throw new Error('an active wallet was not found in the wallet list')
-                await Promise.all([
-                    this.$store.commit('SET_WALLET_LIST', walletListWithBalances),
-                    this.$store.commit('SET_WALLET', activeWalletWithBalance),
-                ])
+                await this.$store.commit('SET_WALLET_LIST', walletListWithBalances)
+                await this.$store.commit('SET_WALLET', activeWalletWithBalance)
                 this.$store.commit('SET_BALANCE_LOADING', false)
                 localSave('wallets', JSON.stringify(walletListWithBalances))
 
@@ -191,31 +189,16 @@
 
                 const activeWalletWithMultisigStatus = walletListWithMultisigStatuses
                   .find(wallet => wallet.address === this.wallet.address)
+
                 if (activeWalletWithMultisigStatus === undefined) throw new Error('an active wallet was not found in the wallet list')
-                this.$store.commit('SET_WALLET_LIST', walletListWithMultisigStatuses)
-                this.$store.commit('SET_WALLET', activeWalletWithMultisigStatus)
+                await this.$store.commit('SET_WALLET_LIST', walletListWithMultisigStatuses)
+                await this.$store.commit('SET_WALLET', activeWalletWithMultisigStatus)
                 localSave('wallets', JSON.stringify(walletListWithMultisigStatuses))
             } catch (error) {
               // Use this error for network status
               throw new Error(error)
             }
         }
-    
-
-
-            // let addressMap = {}
-
-            
-            // const defaultMosaic = {
-            //     amount: 0,
-            //     name: nodeConfig.currentXem,
-            //     hex: that.currentXEM1,
-            //     show: true,
-            //     divisibility: 6,
-            //     showInManage: true
-            // }
-
-
 
         // @TODO: move out from there
         async initMosaic(wallet) {
@@ -288,13 +271,6 @@
             this.$store.commit('SET_MOSAIC_LOADING', false)
         }
 
-
-
-
-
-
-
-
         // @TODO: move out from there
         async getMarketOpenPrice() {
             const that = this
@@ -350,16 +326,57 @@
         // } catch (e) {
         //     console.log(e)
         // }
+        augmentMosaicsInTransactions() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const {transferTransactionList} = this.activeAccount.transactionList
+                    const mosaicsFromBalance = [...this.activeAccount.mosaic]
+                    const mosaicsInTransfers = transferTransactionList.map(({mosaics})=>mosaics)
+                    const mosaicsHexIds = [].concat(...mosaicsInTransfers).map(({id})=> id.toHex())
+                    const uniqueMosaicsInTransfers = Array.from(new Set(mosaicsHexIds))
+                    const mosaicsToQuery = uniqueMosaicsInTransfers
+                        .filter(mosaicId => mosaicsFromBalance
+                        .findIndex(({hex}) => hex === mosaicId) === -1)
+
+                    // @TODO: Query mosaicInfo
+                    // @TODO: mosaics named by someone else
+                    const augmentedTransactionList = transferTransactionList
+                        .map(tx => {return {...tx, mosaics: tx.mosaics
+                        .map(mosaic => {
+                            const newMosaic = mosaicsFromBalance.find(({hex}) => hex === mosaic.id.toHex())
+                            if (newMosaic === undefined) return mosaic
+                            if (newMosaic.amount) delete newMosaic.amount
+                            return {...mosaic, ...newMosaic}
+                        })}})
+                        .map(tx =>  (
+                            tx.mosaics.length === 1
+                                ? {
+                                    ...tx,
+                                    infoThird: getRelativeMosaicAmount(
+                                        tx.mosaics[0].amount.compact(),
+                                        tx.mosaics[0].divisibility,
+                                    )
+                                }
+                                : tx
+                        ))
+
+                    await this.$store.commit('SET_TRANSACTION_LIST', {
+                        transferTransactionList: augmentedTransactionList,
+                        receiptList: this.activeAccount.transactionList.receiptList
+                    })
+                    resolve(true)
+                } catch (error) {
+                    reject(error)
+                }
+            })
+        }
 
         async onWalletChange(newWallet) {
-            if (!this.chainListeners) {
-                this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
-                this.chainListeners.start()
-            } else {
-                this.chainListeners.switchAddress(newWallet.address)
-            }
             try {
-                await this.$store.commit('SET_TRANSACTIONS_LOADING', true)
+                await Promise.all([
+                    this.$store.commit('SET_TRANSACTIONS_LOADING', true),
+                    this.$store.commit('SET_BALANCE_LOADING', true),
+                ])
 
                 const res = await Promise.all([
                     // @TODO make it an AppWallet methods
@@ -368,88 +385,54 @@
                     this.setTransferTransactionList(newWallet.address)
                 ])
                 this.$store.commit('SET_NAMESPACE', res[1] || [])
-
-                // Get all mosaics from transactions
-                const {transferTransactionList} = this.activeAccount.transactionList
-                const mosaicsFromBalance = this.activeAccount.mosaic
-                const mosaicsInTransfers = transferTransactionList.map(({mosaics})=>mosaics)
-                const mosaicsHexIds = [].concat(...mosaicsInTransfers).map(({id})=> id.toHex())
-                const uniqueMosaicsInTransfers = Array.from(new Set(mosaicsHexIds))
-                const mosaicsToQuery = uniqueMosaicsInTransfers
-                    .filter(mosaicId => mosaicsFromBalance
-                    .findIndex(({hex}) => hex === mosaicId) === -1)
-
-                // @TODO: Query mosaicInfo
-                // @TODO: mosaics named by someone else
-                const augmentedTransactionList = transferTransactionList
-                    .map(tx => {return {...tx, mosaics: tx.mosaics
-                    .map(mosaic => {
-                        const newMosaic = mosaicsFromBalance.find(({hex}) => hex === mosaic.id.toHex())
-                        delete newMosaic.amount
-                        if (newMosaic === undefined) return
-                        return {...mosaic, ...newMosaic}
-                    })}})
-                    .map(tx =>  (
-                        tx.mosaics.length === 1
-                            ? {
-                                ...tx,
-                                infoThird: getRelativeMosaicAmount(
-                                    tx.mosaics[0].amount.compact(),
-                                    tx.mosaics[0].divisibility,
-                                )
-                            }
-                            : tx
-                    ))
-
-                this.$store.commit('SET_TRANSACTION_LIST', {
-                    transferTransactionList: augmentedTransactionList,
-                    receiptList: this.activeAccount.transactionList.receiptList
-                })
+                await this.augmentMosaicsInTransactions()
+                
+                if (!this.chainListeners) {
+                    this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
+                    this.chainListeners.start()
+                    this.chainListeners.startTransactionListeners()
+                } else {
+                    this.chainListeners.switchAddress(newWallet.address)
+                }
             } catch (error) {
                 console.error(error, 'ERROR')
             }
         }
 
-        mounted() {
+        async mounted() {
+            /**
+             * On app initialisation
+             */
+            this.$Notice.config({ duration: 4 })
+            this.getMarketOpenPrice()
+
+            await this.setWalletsBalancesAndMultisigStatus()
+            if (this.wallet && this.wallet.address) this.onWalletChange(this.wallet)
+
+            /**
+             * 
+             * START EVENTS LISTENERS
+             * 
+             */
             this.$watchAsObservable('wallet')
                 .pipe(
-                    throttleTime(5000,asyncScheduler, {leading: true, trailing: true}),
+                    throttleTime(6000,asyncScheduler, {leading: true, trailing: true}),
                 ).subscribe(({newValue, oldValue}) => {
                     /**
-                     * On No Wallet Set
+                     * On first wallet set
                      */
-                    if(!newValue || !newValue.address) {
-                        // @TODO: no wallet available
+                    if(oldValue.address === undefined || newValue.address !== undefined) {
+                        // @TODO
                     }
                     
                     /**
                      * On Wallet Change
                      */
-                    if (newValue.address !== oldValue.address) {
+                    if (oldValue.address !== undefined && newValue.address !== oldValue.address) {
+                        console.log(newValue.address, oldValue.address, 'newValue.address, oldValue.addressnewValue.address, oldValue.addressnewValue.address, oldValue.address')
                         this.onWalletChange(newValue)
                     }
                 })
-
-            this.setWalletsBalancesAndMultisigStatus()
-            this.getMarketOpenPrice()
-            if (this.wallet && this.wallet.address) {
-                if (!this.chainListeners) {
-                    this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
-                    this.chainListeners.start()
-                } else {
-                    this.chainListeners.switchAddress(this.wallet.address)
-                }
-                this.initMosaic(this.wallet)
-                this.setTransferTransactionList(this.wallet.address)
-            }
-
-            this.$Notice.config({ duration: 4 })
-
-            // this.$store.watch(
-            //     (state, getters) => getters.wallet,
-            //     (newWallet, oldWallet) => {
-
-            // }, {deep: true})
 
 
             this.$store.subscribe((mutation, state) => {
@@ -467,7 +450,6 @@
                     break;
               }
             })
-
             // @TODO: hook to onLogin event
         }
 
@@ -529,8 +511,6 @@
 
     // MosaicList
     this.initMosaic()
-
-
 
     // CollectionRecord
     this.isLoadingTransactionRecord = true
