@@ -19,7 +19,8 @@
     import {Component, Vue, Watch} from 'vue-property-decorator'
     import {mapState} from 'vuex'
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
-    import {ChainListeners} from '@/core/services/listeners'
+    import {ChainListeners} from '@/core/services/listeners.ts'
+    import {getNetworkGenerationHash, getNetworkMosaics} from '@/core/utils/network.ts'
     import {aliasType} from '@/config/index.ts'
     import {market} from "@/core/api/logicApi.ts"
     import {KlineQuery} from "@/core/query/klineQuery.ts"
@@ -94,49 +95,9 @@
             return this.activeAccount.wallet.address
         }
 
-        // App init
-        // Endpoint change
-        // SET_IS_NODE_HEALTHY set to false
-        async getNetworkGenerationHash(): Promise<void> {
-            const {currentNode} = this
-            try {
-                const block = await new BlockApiRxjs().getBlockByHeight(currentNode, 1).toPromise()
-                this.$store.commit('SET_IS_NODE_HEALTHY', true)
-                this.$Notice.success({
-                    title: this.$t(Message.NODE_CONNECTION_SUCCEEDED) + ''
-                })
-                this.$store.commit('SET_GENERATION_HASH', block.generationHash)
-            } catch (error) {
-                console.error(error)
-                this.$Notice.error({
-                    title: this.$t(Message.NODE_CONNECTION_ERROR) + ''
-                })
-                this.$store.commit('SET_IS_NODE_HEALTHY', false)
-            }
-        }
 
-        // SET_GENERATION_HASH change
-        async getNetworkMosaics(): Promise<void> {
-            const {currentNode} = this
-            // @TODO: nem.xem should be an app constant
-            const mainMosaicName = 'nem.xem'
-            try {
-                const mosaic = await new NamespaceHttp(currentNode)
-                  .getLinkedMosaicId(new NamespaceId(mainMosaicName))
-                  .toPromise()
 
-                // @TODO: check wether !mosaic works
-                if (!mosaic) {
-                    throw new Error(`${mainMosaicName} was not found`)
-                    this.$store.commit('SET_CURRENT_XEM_1', mosaic.toHex())
-                }  
-            } catch (error) {
-                console.error(error)
-                this.$store.commit('SET_IS_NODE_HEALTHY', false)
-            }
-        }
-
-        // @TODO: move out from there
+        // @TODO: move out from there when refactoring multisig
         async setWalletsBalancesAndMultisigStatus() {
             this.$store.commit('SET_BALANCE_LOADING', true)
             const walletListFromStorage: any = localRead('wallets') !== '' ? JSON.parse(localRead('wallets')) : false
@@ -380,8 +341,9 @@
              */
             this.$Notice.config({ duration: 4 })
             this.getMarketOpenPrice()
-
-            await this.getNetworkGenerationHash()
+            const {node} = this  
+            await getNetworkGenerationHash(node, this)
+            await getNetworkMosaics(node, this)
             await this.setWalletsBalancesAndMultisigStatus()
             if (this.wallet && this.wallet.address) this.onWalletChange(this.wallet)
 
@@ -417,12 +379,15 @@
                      * On Node Change
                      */
                     case 'SET_NODE':
+                        const node = mutation.payload
                         if (!this.chainListeners) {
-                            await this.getNetworkGenerationHash()
-                            this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
+                            await getNetworkGenerationHash(node, this)
+                            // @TODO: Handle generationHash change
+                            await getNetworkMosaics(node, this)
+                            this.chainListeners = new ChainListeners(this, this.wallet.address, node)
                             this.chainListeners.start()
                         } else {
-                            this.chainListeners.switchEndpoint(this.node)
+                            this.chainListeners.switchEndpoint(node)
                         }
                     break;
               }
