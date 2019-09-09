@@ -66,11 +66,6 @@ export class MenuBarTs extends Vue {
         return this.$i18n.locale
     }
 
-    set isNodeHealthy(isNodeHealthy) {
-        this.$store.commit('SET_IS_NODE_HEALTHY', isNodeHealthy)
-    }
-
-
 
     set language(lang) {
         this.$i18n.locale = lang

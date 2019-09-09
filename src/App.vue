@@ -115,26 +115,6 @@
             }
         }
 
-        // App init
-        // Endpoint change
-        // SET_IS_NODE_HEALTHY set to false
-        async getNetworkInfo(): Promise<void> {
-            const {currentNode} = this
-            try {
-                const block: any = await new BlockApiRxjs().getBlockchainHeight(currentNode).toPromise()
-                this.$store.commit('SET_CHAIN_STATUS', {
-                    numTransactions: block.numTransactions ? block.numTransactions : 0,
-                    signerPublicKey: block.signer.publicKey,
-                    currentHeight: block.height.compact(),
-                    currentBlockInfo: block,
-                    currentGenerateTime: 12
-                })
-            } catch (error) {
-                console.error(error)
-                this.$store.commit('SET_IS_NODE_HEALTHY', false)
-            }
-        }
-
         // SET_GENERATION_HASH change
         async getNetworkMosaics(): Promise<void> {
             const {currentNode} = this
@@ -320,12 +300,7 @@
             })
         }
 
-        // @TODO: integrate
-        // try {
-        //     await that.getBlockInfoByTransactionList(that.allTransactionsList, node)
-        // } catch (e) {
-        //     console.log(e)
-        // }
+        // @TODO: integrate getBlockInfoByTransactionList
         augmentMosaicsInTransactions() {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -406,6 +381,7 @@
             this.$Notice.config({ duration: 4 })
             this.getMarketOpenPrice()
 
+            await this.getNetworkGenerationHash()
             await this.setWalletsBalancesAndMultisigStatus()
             if (this.wallet && this.wallet.address) this.onWalletChange(this.wallet)
 
@@ -435,13 +411,14 @@
                 })
 
 
-            this.$store.subscribe((mutation, state) => {
+            this.$store.subscribe(async (mutation, state) => {
               switch(mutation.type) {
                     /**
                      * On Node Change
                      */
                     case 'SET_NODE':
                         if (!this.chainListeners) {
+                            await this.getNetworkGenerationHash()
                             this.chainListeners = new ChainListeners(this, this.wallet.address, this.node)
                             this.chainListeners.start()
                         } else {
@@ -493,41 +470,6 @@
     //         that.isLoadingTransactionRecord = false
     //     })
     // }
-/*
-    ----------------------
-    TODOs
-    ----------------------
-    Get account address alias (update when method available)
-
-
-    ----------------------
-    Confirmed Tx change
-    ----------------------
-
-    // MonitorDashboard
-    this.allTransactionsList = []
-    this.refreshReceiptList()
-    this.refreshTransferTransactionList()
-
-    // MosaicList
-    this.initMosaic()
-
-    // CollectionRecord
-    this.isLoadingTransactionRecord = true
-    this.getConfirmedTransactions()
-
-    // MonitorPanel
-    this.initMosaic()
-    this.getAccountsName()
-    this.getMyNamespaces()
-
-    ----------------------
-    Unconfirmed Tx change
-    ----------------------
-    // Collection record
-    this.isLoadingTransactionRecord = true
-    this.getUnConfirmedTransactions()
-*/
 </script>
 
 <style lang="less">
