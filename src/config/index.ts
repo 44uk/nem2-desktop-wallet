@@ -30,7 +30,7 @@ export const isWindows = isWin32
 export const apiServerConfig = {
     apiUrl: 'http://120.79.181.170',
     marketUrl: 'http://app.nemcn.io',
-    voteUrl: 'http://192.168.0.102'
+    voteUrl: 'http://120.79.181.170'
 }
 
 export const localesMap: any = {
@@ -221,22 +221,24 @@ export const nodeList = [
         url: '52.194.207.217',
         isSelected: false,
     },
+    // {
+    //     value: 'http://3.0.78.183:3000',
+    //     name: 'my-8',
+    //     url: '3.0.78.183',
+    //     isSelected: false,
+    // },
     {
-        value: 'http://3.0.78.183:3000',
-        name: 'my-8',
-        url: '3.0.78.183',
-        isSelected: false,
-    }, {
         value: 'http://13.114.200.132:3000',
         name: 'jp-5',
         url: '13.114.200.132',
         isSelected: true,
-    }, {
-        value: 'http://47.107.245.217:3000',
-        name: 'cn-2',
-        url: '47.107.245.217',
-        isSelected: false,
-    }
+    },
+    // {
+    //     value: 'http://47.107.245.217:3000',
+    //     name: 'cn-2',
+    //     url: '47.107.245.217',
+    //     isSelected: true,
+    // }
 ]
 
 export const timeZoneListData = timeZoneList
