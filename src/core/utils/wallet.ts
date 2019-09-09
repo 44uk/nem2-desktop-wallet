@@ -300,26 +300,6 @@ export class AppWallet {
     }
 }
 
-export const saveLocalWallet = (wallet: any): void => {
-    const localData: any[] = localRead('wallets') === ''
-        ? [] : JSON.parse(localRead('wallets'))
-
-    if (!localData.length) {
-        localSave('wallets', JSON.stringify([wallet]))
-        return
-    }
-
-    let dataToStore = [...localData]
-    const walletIndex = localData.find(({address}) => address === wallet.address)
-
-    if (walletIndex > -1) {
-        localSave('wallets', JSON.stringify(dataToStore[walletIndex].assign(wallet)))
-        return
-    }
-
-    localSave('wallets', JSON.stringify([wallet, ...dataToStore]))
-}
-
 export const getNamespaces = async (address: string, node: string) => {
     let list = []
     let namespace = {}
