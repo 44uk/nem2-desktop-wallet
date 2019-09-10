@@ -82,5 +82,8 @@ export default {
         UPDATE_TRANSACTION_LIST(state: account, transaction: any) {
             state.transactionList.push(transaction)
         },
+        SET_CURRENT_XEM(state: account, currentXem: string) {
+            state.currentXem = currentXem
+        }
     },
 }

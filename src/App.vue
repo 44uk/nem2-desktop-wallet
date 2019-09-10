@@ -446,6 +446,47 @@
             }
         }
     }
+    // // get current network mosaic hex by Genesis Block Info
+    // getCurrentNetworkMosaic() {
+    //     const {currentNode} = this
+    //     const that = this
+
+    //     new BlockApiRxjs().getBlockTransactions(currentNode, 1, new QueryParams(100)).subscribe((genesisBlockInfoList: any) => {
+    //         const mosaicDefinitionTx = genesisBlockInfoList.find(({type}) => type === TransactionType.MOSAIC_DEFINITION)
+    //         const mosaicAliasTx = genesisBlockInfoList.find(({type}) => type === TransactionType.MOSAIC_ALIAS)
+
+    //         that.$store.commit('SET_CURRENT_XEM_1', mosaicDefinitionTx.mosaicId.toHex())
+    //         that.$store.commit('SET_XEM_DIVISIBILITY', mosaicDefinitionTx.mosaicProperties.divisibility)
+
+    //         new NamespaceApiRxjs().getNamespacesName([mosaicAliasTx.namespaceId], currentNode).subscribe((namespaceNameResultList: any) => {
+    //             const namesapceListLength = namespaceNameResultList.length
+    //             let namespaceMap = {}
+    //             let rootNamespace: any = {}
+    //             // get root namespace and get namespaceMap to get fullname
+    //             namespaceNameResultList.forEach((item, index) => {
+    //                 if (!item.parentId) {
+    //                     rootNamespace = item
+    //                     return
+    //                 }
+    //                 namespaceMap[item.parentId.toHex()] = item
+    //             })
+    //             const rootHex = rootNamespace.namespaceId.toHex()
+    //             let currentNamespace = rootNamespace.name
+    //             // namespace max level <= 3
+    //             if (namespaceMap[rootHex]) {
+    //                 const middleHex = namespaceMap[rootHex].namespaceId.toHex()
+    //                 currentNamespace += '.' + namespaceMap[rootHex].name
+    //                 if (namespaceMap[middleHex]) {
+    //                     const leafHex = namespaceMap[middleHex].name
+    //                     currentNamespace += '.' + leafHex
+    //                 }
+    //             }
+
+    //             that.$store.commit('SET_CURRENT_XEM', currentNamespace)
+    //         })
+    //     })
+
+    // }
 
     // async getUnConfirmedTransactions() {
     //     const that = this

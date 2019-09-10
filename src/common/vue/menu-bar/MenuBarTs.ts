@@ -8,6 +8,7 @@ import {localSave} from "@/core/utils/utils.ts"
 import {Component, Vue} from 'vue-property-decorator'
 import {windowSizeChange, minWindow, maxWindow, closeWindow} from '@/core/utils/electron.ts'
 import {mapState} from 'vuex'
+import {NamespaceApiRxjs} from "@/core/api/NamespaceApiRxjs"
 
 @Component({
     computed: {
