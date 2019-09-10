@@ -11,7 +11,7 @@
     import {AppWallet, getMosaicList, getMosaicInfoList, getNamespaces} from '@/core/utils/wallet.ts'
     import {
         Listener, NamespaceHttp, NamespaceId, Address, MosaicHttp, MosaicId,
-        PublicAccount, NetworkType, MosaicService, AccountHttp, UInt64, MosaicInfo
+        PublicAccount, NetworkType, MosaicService, AccountHttp, UInt64, MosaicInfo, MosaicAlias
     } from "nem2-sdk"
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
@@ -28,6 +28,7 @@
     import {transactionFormat} from '@/core/utils/format.ts'
     import {from, interval, asyncScheduler} from 'rxjs'
     import {toArray, flatMap, concatMap, map, tap, throttleTime} from 'rxjs/operators'
+    import {AppMosaics} from '@/core/utils/mosaics'
 
     @Component({
         computed: {
@@ -189,17 +190,17 @@
                         const hex = x.mosaicInfo.mosaicId.toHex()
                         // @TODO: Why duplicate divisibility
                         const divisibility = x.mosaicInfo.divisibility
-                        const amount = getRelativeMosaicAmount(x.amount.compact(), divisibility)
+                        const balance = getRelativeMosaicAmount(x.amount.compact(), divisibility)
 
                         if (hex === networkMosaicId) new AppWallet(wallet)
-                            .updateAccountBalance(amount, this.$store)
+                            .updateAccountBalance(balance, this.$store)
 
                         // @TODO make this object an interface
                         return {
                             ...x,
                             hex,
                             name: getName(hex),
-                            amount,
+                            balance,
                             divisibility,
                             show: true,
                             showInManage: true,
@@ -262,17 +263,63 @@
         }
 
         // @TODO: integrate getBlockInfoByTransactionList
-        augmentMosaicsInTransactions() {
+        augmentMosaics() {
             return new Promise(async (resolve, reject) => {
                 try {
+                    const appMosaics = AppMosaics()
+                    
+                    // Get all namespaces
+                    //   Gather all hexIds
+                    appMosaics.addItems(this.activeAccount.mosaic)
+                    appMosaics.fromTransactions(this.activeAccount.transactionList.transferTransactionList)
+                    appMosaics.fromNamespaces(this.namespaceList)
+                    // @TODO: query network for incomplete mosaics
+                    
+                    appMosaics.augmentBalances(this.activeAccount.mosaic)
+                    //   Check wether they are in the namespaceList
+                    //   return {hexId: name | false}
+                    //   Assign properties to balances and transactions
+
+
+                    // Put divisibility everywhere available
+                    //   Gather hexIds from balances (that already have divisibility)
+                    //   Gather hexIds from transactions
+                    //   Gather hexIds from tx not in balances
+                    //   Query the network
+                    //   return {hexId: property  bes}
+                    //   Assign properties to transactions
                     const {transferTransactionList} = this.activeAccount.transactionList
                     const mosaicsFromBalance = [...this.activeAccount.mosaic]
                     const mosaicsInTransfers = transferTransactionList.map(({mosaics})=>mosaics)
-                    const mosaicsHexIds = [].concat(...mosaicsInTransfers).map(({id})=> id.toHex())
-                    const uniqueMosaicsInTransfers = Array.from(new Set(mosaicsHexIds))
-                    const mosaicsToQuery = uniqueMosaicsInTransfers
+                    const mosaicsHexIdsInTransfers = []
+                        .concat(...mosaicsInTransfers).map(({id})=> {hex: id.toHex()})
+
+                    const mosaicsHexIdsInBalance = mosaicsFromBalance.map(hex => hex)
+
+                    const uniqueMosaicsHex = Array
+                        .from(new Set([...mosaicsHexIdsInTransfers, ...mosaicsHexIdsInBalance]))
+
+                    const mosaicsToQuery = uniqueMosaicsHex
                         .filter(mosaicId => mosaicsFromBalance
                         .findIndex(({hex}) => hex === mosaicId) === -1)
+
+                    console.log(this.namespaceList, 'NAZMADPECSX')
+                    const mosaicAliases = [...this.namespaceList]
+                        .filter(({alias}) => alias instanceof MosaicAlias)
+
+                    // console.log(mosaicAliases, 'MOSAIC ALIASES', mosaicAliases[0].alias)
+                    // console.log(mosaicsInTransfers, 'MOSmosaicsInTransfersmosaicsInTransfersmosaicsInTransfersES')
+                    // const mosaicsHexWithAliases = !mosaicAliases.length 
+                    //     ? uniqueMosaicsInTransfers
+                    //     : uniqueMosaicsInTransfers.map(hex => {
+                    //         const alias = mosaicAliases.find(({alias}) => new MosaicId(alias.mosaicId).toHex() === hex)
+
+                    //         console.log(alias, mosaicAliases, hex, '111111111111111111')
+                    //         if (alias === undefined) return {hex, name: false}
+                    //         return {hex, name: alias.name}
+                    //     })
+
+                    // console.log(mosaicsHexWithAliases, 'mopsaincoizeo')
 
                     // @TODO: Query mosaicInfo
                     // @TODO: mosaics named by someone else
@@ -321,7 +368,7 @@
                     this.setTransferTransactionList(newWallet.address)
                 ])
                 this.$store.commit('SET_NAMESPACE', res[1] || [])
-                await this.augmentMosaicsInTransactions()
+                await this.augmentMosaics()
                 
                 if (!this.chainListeners) {
                     this.chainListeners = new ChainListeners(this, newWallet.address, this.node)
@@ -348,9 +395,7 @@
             if (this.wallet && this.wallet.address) this.onWalletChange(this.wallet)
 
             /**
-             * 
              * START EVENTS LISTENERS
-             * 
              */
             this.$watchAsObservable('wallet')
                 .pipe(

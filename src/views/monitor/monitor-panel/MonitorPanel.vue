@@ -77,7 +77,7 @@
                 </span>
                 <span class="mosaic_name">{{mosaic.name || mosaic.hex}}</span>
                 <span class="mosaic_value">
-                  <div>{{mosaic.amount}}</div>
+                  <div>{{mosaic.balance}}</div>
                 </span>
               </div>
               <div class="complete_container">
