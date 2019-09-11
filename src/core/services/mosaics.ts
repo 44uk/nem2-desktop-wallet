@@ -1,4 +1,8 @@
-import {AccountHttp, Address, MosaicAmountView, Mosaic, MosaicService, MosaicHttp, MosaicId} from 'nem2-sdk'
+import {AccountHttp, Address, MosaicAmountView, MosaicService, MosaicHttp, MosaicId} from 'nem2-sdk'
+import {AppMosaics} from '@/core/utils/mosaics'
+import {of} from 'rxjs'
+import {map, mergeMap} from 'rxjs/operators'
+import {AppWallet} from '@/core/utils/wallet.ts'
 
 /**
  * Custom implementation for performance gains
@@ -35,3 +39,54 @@ export const mosaicsAmountViewFromAddress = (node: string, address: Address): Pr
   })
 }
 
+export const initMosaic = (wallet, that: any) => {
+  const appMosaics = AppMosaics()
+  const {node, mosaicList, currentXEM1} = that
+  const store = that.$store
+  appMosaics.init(mosaicList)
+  const address = Address.createFromRawAddress(wallet.address)
+
+  return new Promise(async (resolve, reject) => {
+      try {
+          const mosaicAmountViews = await mosaicsAmountViewFromAddress(node, address)
+          of(mosaicAmountViews)
+              .pipe(
+                  mergeMap((_) => _),
+                  map(mosaic => appMosaics.fromMosaicAmountView(mosaic, store))
+              )
+              .toPromise()
+              new AppWallet(wallet).updateAccountBalance(mosaicList[currentXEM1].balance, store)
+              await Promise.all([
+                  store.commit('SET_BALANCE_LOADING', false),
+                  store.commit('SET_MOSAICS_LOADING', false),
+              ])
+              resolve(true)
+      } catch (error) {
+          store.commit('SET_MOSAICS_LOADING', false)
+          reject(error)   
+      }
+  })
+}
+
+// @TODO: integrate getBlockInfoByTransactionList
+/**
+ * Add namespaces and divisibility to transactions and balances
+ */
+export const augmentMosaics = (that: any) => {
+  return new Promise(async (resolve, reject) => {
+      try {
+          const appMosaics = AppMosaics()
+          appMosaics.init(that.mosaicList)
+          appMosaics.fromNamespaces(that.namespaceList, that.$store)
+          appMosaics.fromTransactions(that.transactionList.transferTransactionList, that.$store)
+          // @TODO: Check if the unnamed mosaics have aliases
+          await appMosaics.augmentTransactionsMosaics(
+              that.transactionList,
+              that.$store,
+          )
+          resolve(true)
+      } catch (error) {
+          reject(error)
+      }
+  })
+}
