@@ -64,6 +64,12 @@
             </div>
             <div class="mosaicList">
               <div
+                class="toggle_all_checked"
+                @click="toggleAllChecked()"
+              >
+                {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
+              </div>      
+              <div
                 v-for="(mosaic, index) in filteredList"
                 :key="index"
                 class="mosaic_data"

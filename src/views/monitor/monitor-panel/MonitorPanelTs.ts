@@ -22,10 +22,10 @@ export class MonitorPanelTs extends Vue {
     isShowAccountInfo = true
     // isShowAccountAlias = false @TODO: Account Alias (update when method available)
     isShowManageMosaicIcon = false
+    ischecked=true
     monitorSeleted = monitorSeleted
     monitorUnselected = monitorUnselected
     navigatorList: any = minitorPanelNavigatorList
-
 
     get xemUsdPrice() {
         return this.app.xemUsdPrice
@@ -119,6 +119,12 @@ export class MonitorPanelTs extends Vue {
                 }
             )
         })
+    }
+
+    toggleAllChecked(){
+        this.ischecked = !this.ischecked
+        const updatedList: any = {...this.mosaicMap}
+        Object.keys(updatedList).forEach(key=>updatedList[key].show = this.ischecked)        
     }
 
     showMosaicMap() {
