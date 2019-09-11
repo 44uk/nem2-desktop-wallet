@@ -95,7 +95,7 @@ export default class TransferTransactionTs extends Vue {
 
     addMosaic() {
         const {currentMosaic, mosaics, currentAmount} = this
-        const {divisibility} = mosaics[currentMosaic].properties
+        const {divisibility} = mosaics[currentMosaic].mosaicInfo.properties
         this.formModel.mosaicTransferList
             .push(
                 new Mosaic(
