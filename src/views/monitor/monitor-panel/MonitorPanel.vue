@@ -33,7 +33,7 @@
               <div class="mosaicList secondary_page_animate">
                 <div
                   class="mosaic_data"
-                  v-for="(mosaic, index) in mosaics"
+                  v-for="(mosaic, index) in mosaicList"
                   :key="index"
                   v-if="mosaic.show"
                 >
@@ -43,7 +43,7 @@
                   </span>
                   <span class="mosaic_name">{{mosaic.name || mosaic.hex}}</span>
                   <span class="mosaic_value">
-                    <div>{{formatNumber(mosaic.amount)}}</div>
+                    <div>{{formatNumber(mosaic.balance)}}</div>
                   </span>
                 </div>
               </div>

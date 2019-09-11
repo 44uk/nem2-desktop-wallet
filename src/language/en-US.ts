@@ -184,7 +184,8 @@ export const en_US = {
 //   monitor-transfer
     transfer_target: 'To',
     send: 'Send',
-    transfer_record: 'Transfers sent',
+    transfer_record: 'Transfer records',
+    transfer_sent: 'Transfer sent',
     receive_address_or_alias: 'Receive address or @+alias（@nem.xem）',
     please_enter_the_transfer_amount: 'Please enter the transfer amount',
     please_enter_a_comment: 'Please enter a comment',
@@ -451,7 +452,7 @@ export const en_US = {
     Basic_information: 'Basic information',
     link: 'Link info',
     type: 'Link type',
-    restrictable: 'restrictable',
+    restrictable: 'Restrictable',
     pre_week: 'PreWeek',
     yesterday: 'Yesterday',
 

@@ -39,10 +39,6 @@ export class MonitorPanelTs extends Vue {
         return this.app.mosaicsLoading
     }
 
-    get mosaics() {
-        return this.activeAccount.mosaic
-    }
-
     get getWallet() {
         return this.activeAccount.wallet
     }
@@ -67,9 +63,23 @@ export class MonitorPanelTs extends Vue {
         return this.activeAccount.currentXEM2
     }
 
+    get mosaicMap() {
+        return this.activeAccount.mosaics
+    }
+
+    get mosaics() {
+        return this.activeAccount.mosaics
+    }
+
+    get mosaicList() {
+        const {mosaics} = this
+        if (this.mosaicsLoading || !mosaics) return []
+        return Object.values(this.mosaics)
+    }
+
     get filteredList() {
         const {mosaics, mosaicName} = this
-        const newList = [...mosaics]
+        const newList: any = Object.values(mosaics)
         return newList.filter(mosaic => (
             mosaic.name && mosaic.name.indexOf(mosaicName) > -1
                 || mosaic.hex.indexOf(mosaicName) > -1
@@ -116,9 +126,8 @@ export class MonitorPanelTs extends Vue {
     }
 
     toggleShowMosaic(mosaic) {
-        const updatedList = [...this.mosaics]
-        const mosaicIndex = updatedList.findIndex(({hex})=>mosaic.hex === hex)
-        updatedList[mosaicIndex].show = !updatedList[mosaicIndex].show
+        const updatedList: any = {...this.mosaicMap}
+        updatedList[mosaic.hex].show = !updatedList[mosaic.hex].show
         this.$store.commit('SET_MOSAICS', updatedList)
     }
 

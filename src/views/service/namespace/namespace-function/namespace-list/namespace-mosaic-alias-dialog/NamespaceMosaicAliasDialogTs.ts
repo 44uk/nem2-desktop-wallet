@@ -45,9 +45,14 @@ export class NamespaceMosaicAliasDialogTs extends Vue {
     get xemDivisibility() {
         return this.activeAccount.xemDivisibility
     }
-
+    get mosaics() {
+        return this.activeAccount.mosaics
+    }
     get unlinkMosaicList() {
-        return this.activeAccount.mosaic.filter(({name})=> !name)
+        const {mosaics}: any = this
+        return Object.values(mosaics)
+                .filter(({name})=> name)
+                .map((name) => ({label: name, value: name}))
     }
 
     mosaicAliasDialogCancel() {

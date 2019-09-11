@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import i18n from '@/language/index.ts'
 import {Address, AliasActionType, Deadline, TransactionType, UInt64} from 'nem2-sdk'
-import {nodeConfig} from "@/config"
 
 const vueInstance = new Vue({i18n})
 

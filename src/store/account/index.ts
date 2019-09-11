@@ -9,7 +9,7 @@ declare interface account {
     currentXEM2: string,
     account: Account,
     wallet: any,
-    mosaic: any[],
+    mosaics: any[],
     namespace: any[],
     errorTx: Array<any>,
     addresAliasMap: any,
@@ -26,7 +26,7 @@ export default {
         currentXEM2: nodeConfig.currentXEM2,
         account: {},
         wallet: {},
-        mosaic: [],
+        mosaics: {},
         namespace: [],
         errorTx: [],
         addresAliasMap: {},
@@ -49,8 +49,8 @@ export default {
         SET_WALLET(state: account, wallet: any): void {
             state.wallet = wallet
         },
-        SET_MOSAICS(state: account, mosaic: any[]): void {
-            state.mosaic = mosaic
+        SET_MOSAICS(state: account, mosaics: any[]): void {
+            state.mosaics = mosaics
         },
         SET_NAMESPACE(state: account, namespace: any[]): void {
             state.namespace = namespace

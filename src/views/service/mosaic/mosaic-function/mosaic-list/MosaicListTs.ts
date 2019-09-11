@@ -33,7 +33,7 @@ export class MosaicListTs extends Vue {
     }
 
     get mosaics() {
-        return this.activeAccount.mosaic
+        return this.activeAccount.mosaics
     }
 
     get currentXEM1() {
@@ -132,7 +132,8 @@ export class MosaicListTs extends Vue {
     }
 
     get filteredMosaics() {
-        return [...this.mosaics].filter(mosaic => (
+        const mosaics: any = Object.values(this.mosaics)
+        return [...mosaics].filter(mosaic => (
             mosaic.mosaicInfo.owner.publicKey === this.accountPublicKey
         ))
     }

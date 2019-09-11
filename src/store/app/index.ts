@@ -60,7 +60,7 @@ export default {
         SET_IS_NODE_HEALTHY(state: appInfo, isNodeHealthy: boolean) {
             state.isNodeHealthy = isNodeHealthy
         },
-        SET_MOSAIC_LOADING(state: appInfo, bool: boolean) {
+        SET_MOSAICS_LOADING(state: appInfo, bool: boolean) {
             state.mosaicsLoading = bool
         },
         SET_BALANCE_LOADING(state: appInfo, bool: boolean) {

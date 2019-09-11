@@ -21,6 +21,7 @@ import {TransactionApiRxjs} from '@/core/api/TransactionApiRxjs.ts'
 import {MosaicApiRxjs} from "@/core/api/MosaicApiRxjs"
 import {createAccount} from "@/core/utils/hdWallet.ts"
 import {AppLock} from "@/core/utils/appLock"
+import { Store } from 'vuex'
 
 export class AppWallet {
     constructor(wallet?: {
@@ -252,13 +253,13 @@ export class AppWallet {
         localSave('wallets', JSON.stringify(newWalletList))
     }
 
-    async setMultisigStatus(node: string): Promise<boolean> {
+    async setMultisigStatus(node: string, store: any): Promise<void> {
         try {
             await new AccountApiRxjs().getMultisigAccountInfo(this.address, node).toPromise()
             this.isMultisig = true
-            return true
+            this.updateWallet(store)
         } catch (error) {
-            return false
+            // Do nothing
         }
     }
 

@@ -25,7 +25,7 @@
           <Col span="1">&nbsp;</Col>
           <Col span="4">{{value.hex}}</Col>
           <Col span="3">{{formatNumber(value.mosaicInfo.supply.compact())}}</Col>
-          <Col span="2" style="padding-left: 20px">{{value.divisibility}}</Col>
+          <Col span="2" style="padding-left: 20px">{{value.mosaicInfo.properties.divisibility}}</Col>
           <Col span="2">{{value.mosaicInfo.properties.transferable}}</Col>
           <Col span="2">{{value.mosaicInfo.properties.supplyMutable}}</Col>
           <Col span="5">

@@ -63,7 +63,7 @@ export default class TransferTransactionTs extends Vue {
     }
 
     get mosaics() {
-        return this.activeAccount.mosaic
+        return this.activeAccount.mosaics
     }
 
     get mosaicList() {
@@ -72,8 +72,9 @@ export default class TransferTransactionTs extends Vue {
         const {mosaics} = this
         if (this.mosaicsLoading || !mosaics) return []
         
-        return [...mosaics].map(({name, amount, hex}) => ({
-            label: `${name||hex} (${amount})`,
+        const mosaicList: any = Object.values(this.mosaics)
+        return [...mosaicList].map(({name, balance, hex}) => ({
+            label: `${name||hex} (${balance.toLocaleString()})`,
             value: hex,
         }))
     }
@@ -94,7 +95,7 @@ export default class TransferTransactionTs extends Vue {
 
     addMosaic() {
         const {currentMosaic, mosaics, currentAmount} = this
-        const {divisibility} = mosaics.find(({hex})=> hex === currentMosaic)
+        const {divisibility} = mosaics[currentMosaic].properties
         this.formModel.mosaicTransferList
             .push(
                 new Mosaic(
