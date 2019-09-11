@@ -6,28 +6,29 @@
 
 <script lang="ts">
     import 'animate.css'
-    import {isWindows, Message, nodeConfig} from "@/config/index.ts"
-    import {localRead, getRelativeMosaicAmount} from '@/core/utils/utils.ts'
-    import {AppWallet, getMosaicList, getMosaicInfoList, getNamespaces} from '@/core/utils/wallet.ts'
+    import {mapState} from 'vuex'
+    import {from, interval, asyncScheduler, of} from 'rxjs'
+    import {toArray, flatMap, concatMap, map, tap, throttleTime, finalize, mergeMap} from 'rxjs/operators'
     import {
         Listener, NamespaceHttp, NamespaceId, Address, MosaicHttp, MosaicId,
         MosaicService, AccountHttp, UInt64, MosaicInfo, MosaicAlias
     } from "nem2-sdk"
+
+    import {isWindows, Message, nodeConfig} from "@/config/index.ts"
+    import {localRead, getRelativeMosaicAmount} from '@/core/utils/utils.ts'
+    import {AppWallet, getMosaicList, getMosaicInfoList, getNamespaces} from '@/core/utils/wallet.ts'
     import {checkInstall} from '@/core/utils/electron.ts'
     import {AccountApiRxjs} from '@/core/api/AccountApiRxjs.ts'
     import {ListenerApiRxjs} from '@/core/api/ListenerApiRxjs.ts'
     import {Component, Vue, Watch} from 'vue-property-decorator'
-    import {mapState} from 'vuex'
     import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
     import {ChainListeners} from '@/core/services/listeners.ts'
     import {getNetworkGenerationHash, getCurrentNetworkMosaic} from '@/core/utils/network.ts'
     import {aliasType} from '@/config/index.ts'
-    import {from, interval, asyncScheduler, of} from 'rxjs'
-    import {toArray, flatMap, concatMap, map, tap, throttleTime, finalize, mergeMap} from 'rxjs/operators'
-    import {AppMosaics} from '@/core/utils/mosaics'
-    import {mosaicsAmountViewFromAddress, initMosaic, augmentMosaics} from '@/core/services/mosaics'
-    import {getMarketOpenPrice} from '@/core/services/marketData'
-    import {setTransactionList} from '@/core/services/transactions'
+    import {AppMosaics} from '@/core/utils/mosaics.ts'
+    import {mosaicsAmountViewFromAddress, initMosaic, augmentMosaics} from '@/core/services/mosaics.ts'
+    import {getMarketOpenPrice} from '@/core/services/marketData.ts'
+    import {setTransactionList} from '@/core/services/transactions.ts'
 
     @Component({
         computed: {
@@ -186,7 +187,6 @@
                      * On Wallet Change
                      */
                     if (oldValue.address !== undefined && newValue.address !== oldValue.address) {
-                        console.log(newValue.address, oldValue.address, 'newValue.address, oldValue.addressnewValue.address, oldValue.addressnewValue.address, oldValue.address')
                         const appMosaics = AppMosaics()
                         appMosaics.reset(this.$store)
                         const networkMosaic = {hex: this.currentXEM1, name: this.currentXem}

@@ -166,7 +166,6 @@ export const AppMosaics = () => ({
           }
           : tx
         })
-
         store.commit('UPDATE_TRANSACTION_LIST', {
             transferTransactionList: augmentedTransactionList,
             receiptList: transactions.receiptList,

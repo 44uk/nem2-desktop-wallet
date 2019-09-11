@@ -54,7 +54,7 @@ export default {
             return state.currentXem
         },
         mosaicList(state) {
-            return state.mosaicList
+            return state.mosaics
         },
         transactions(state) {
             return state.transactionList
@@ -99,10 +99,10 @@ export default {
         },
         UPDATE_TRANSACTION_LIST(state: account, list: any) {
             if (list.transferTransactionList.length) {
-                state.transactionList.transferTransactionList.unshift(list.transferTransactionList)
+                state.transactionList.transferTransactionList.unshift(list.transferTransactionList[0])
             } 
             if (list.receiptList.length) {
-                state.transactionList.receiptList.unshift(list.receiptList)
+                state.transactionList.receiptList.unshift(list.receiptList[0])
             } 
         },
         SET_CURRENT_XEM(state: account, currentXem: string) {

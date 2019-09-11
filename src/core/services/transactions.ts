@@ -21,6 +21,7 @@ export const formatAndSave = (  mosaicList,
         node,
         currentXem,
     )
+
     const appMosaics = AppMosaics()
     appMosaics.init(mosaicList)
     appMosaics.augmentNewTransactionsMosaics(formattedTransactions, store)

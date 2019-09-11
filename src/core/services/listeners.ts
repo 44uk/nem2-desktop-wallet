@@ -1,6 +1,5 @@
 import {Address, Listener} from "nem2-sdk";
 import {filter} from 'rxjs/operators'
-import {transactionFormat} from '@/core/utils/format.ts'
 import {formatAndSave} from '@/core/services/transactions'
 
 export class ChainListeners {
@@ -61,8 +60,6 @@ export class ChainListeners {
                     .unconfirmedAdded(Address.createFromRawAddress(this.address))
                     .pipe(filter((transaction: any) => transaction.transactionInfo !== undefined))
                     .subscribe(transaction => {
-                        console.log(that, '9898989898989898', that.$Notice)
-
                         if (!unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
                             unconfirmedTxList.push(transaction.transactionInfo.hash)
                             that.$Notice.success({
@@ -79,6 +76,7 @@ export class ChainListeners {
         this.confirmedTxListener && this.confirmedTxListener.close()
         const {confirmedTxList, unconfirmedTxList} = this
         const that = this.app
+        const receivedTransactionMessage = that.$t('Transaction_Reception')
         this.confirmedTxListener = new Listener(this.node, WebSocket)
         this.confirmedTxListener
             .open()
@@ -92,8 +90,6 @@ export class ChainListeners {
                             if (unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
                                 unconfirmedTxList.splice(confirmedTxList.indexOf(transaction.transactionInfo.hash), 1)
                             }
-                            console.log('that.store',that.$store )
-                            // @TODO: using $store like that is a quickfix
                             formatAndSave(
                                 that.$store.getters.mosaicList,
                                 transaction,
@@ -104,10 +100,10 @@ export class ChainListeners {
                                 that.$store.getters.currentXem,
                                 that.$store,
                             )
-
+                            
                             that.$Notice.destroy()
                             that.$Notice.success({
-                                title: that.$t('Transaction_Reception').toString(),
+                                title: receivedTransactionMessage, // quickfix
                                 duration: 4,
                             })
                         }
