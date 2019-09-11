@@ -63,17 +63,16 @@
 
             </div>
             <div class="mosaicList">
+                <div class="toggle_all_checked " @click="toggleAllChecked()">
+                  <div class="choose true"></div>
+                  {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
+                </div>
               <div
-                class="toggle_all_checked"
-                @click="toggleAllChecked()"
-              >
-                {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
-              </div>      
-              <div
-                v-for="(mosaic, index) in filteredList"
-                :key="index"
-                class="mosaic_data"
-              >
+                  :class="['mosaic_data',index == 0?'padding_top_0':'']"
+                  v-for="(mosaic, index) in filteredList"
+                  :key="index"
+                  class="mosaic_data"
+                >
                 <span class="namege_img">
                   <img @click="toggleShowMosaic(mosaic)" class="small_icon pointer"
                         :src="mosaic.show?monitorSeleted:monitorUnselected">
