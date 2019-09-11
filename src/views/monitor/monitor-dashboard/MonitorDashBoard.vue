@@ -105,7 +105,7 @@
       <div class="label_page">
         <span @click="switchTransactionPanel(true)"
               :class="['pointer',isShowTransferTransactions?'selected':'','page_title']">
-          {{$t('transfer_sent')}} ({{transferTransactionList.length}})
+          {{$t('transfer_record')}} ({{transferTransactionList.length}})
         </span>
         <span class="line">|</span>
         <span @click="switchTransactionPanel(false)"

@@ -146,7 +146,7 @@ export const AppMosaics = () => ({
   },
 
   // @TODO: refactor, pull out from here, rename 
-  augmentNewTransactionsMosaics(transactions, store) {
+  augmentNewTransactionsMosaics(transactions, store, {isTxUnconfirmed}) {
       try {
         const augmentedTransactionList = transactions.transferTransactionList
         .map(tx => {return {...tx, mosaics: tx.mosaics
@@ -166,10 +166,20 @@ export const AppMosaics = () => ({
           }
           : tx
         })
-        store.commit('UPDATE_TRANSACTION_LIST', {
+
+        if(isTxUnconfirmed) {
+          store.commit('ADD_UNCONFIRMED_TRANSACTION', {
             transferTransactionList: augmentedTransactionList,
             receiptList: transactions.receiptList,
+          })
+          return
+        }
+
+        store.commit('ADD_CONFIRMED_TRANSACTION', {
+          transferTransactionList: augmentedTransactionList,
+          receiptList: transactions.receiptList,
         })
+
     } catch (error) {
         console.error(error)
     }

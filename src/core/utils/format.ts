@@ -24,6 +24,7 @@ const iconMap = {
     dashboardSecret
 }
 
+// @TODO: Transaction headers (eg: time and fee) should be formatted earlier
 const formatAggregateCompelete = (innerTransactionList: Array<any>, accountAddress: string, xemDivisibility: number, currentXem: string) => {
     innerTransactionList = innerTransactionList.map((item) => {
         const type = item.type
@@ -236,36 +237,6 @@ const formatTransferTransactions = function (transaction, accountAddress, curren
     }
     return transaction
 }
-
-// @TODO: check if use that for divisibility (from monitorDashboard)
-// showDialog(transaction, isTransferTransaction?: boolean) {
-//     let MosaicDivisibilityMap = {}
-//     const that = this
-//     const {node} = this
-//     this.isLoadingModalDetailsInfo = true
-//     this.isShowDialog = true
-//     const transactionMosaicList = transaction.mosaics
-//     that.transactionDetails = transaction
-//          if (isTransferTransaction) {
-//         const mosaicIdList = transactionMosaicList.map(({id}) => id)
-//         new MosaicApiRxjs().getMosaics(node, mosaicIdList).subscribe((mosaicInfoList: any) => {
-//             //  todo format alias and mosaic
-//             mosaicInfoList.forEach(mosaicInfo => {
-//                 MosaicDivisibilityMap[mosaicInfo.mosaicId.toHex()] = {
-//                     divisibility: mosaicInfo.properties.divisibility
-//                 }
-//             })
-//             transaction.dialogDetailMap.mosaic = transactionMosaicList.map((item) => {
-//                 const mosaicHex = item.id.id.toHex() + ''
-//                 return '' + mosaicHex + `(${that.getRelativeMosaicAmount(item.amount.compact(), MosaicDivisibilityMap[mosaicHex].divisibility)})`
-//             }).join(',')
-//             that.transactionDetails = transaction
-//             that.isLoadingModalDetailsInfo = false
-//         })
-//     } else {
-//         this.isLoadingModalDetailsInfo = false
-//     } 
-// }
 
 function formatOtherTransaction(transaction: any, accountAddress: string, xemDivisibility: number,currentXem) {
     const {type} = transaction

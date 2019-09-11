@@ -11,8 +11,7 @@ export const formatAndSave = (  mosaicList,
                                 xemDivisibility,
                                 node,
                                 currentXem,
-                                store,) => {
-
+                                store) => {
     const formattedTransactions = transactionFormat(
         [transaction],
         address,
@@ -24,7 +23,7 @@ export const formatAndSave = (  mosaicList,
 
     const appMosaics = AppMosaics()
     appMosaics.init(mosaicList)
-    appMosaics.augmentNewTransactionsMosaics(formattedTransactions, store)
+    appMosaics.augmentNewTransactionsMosaics(formattedTransactions, store, {isTxUnconfirmed: transaction.isTxUnconfirmed || false})
 }
 
 export const setTransactionList = (address, that) => {
@@ -57,37 +56,3 @@ export const setTransactionList = (address, that) => {
         }
     })
 }
-
-// async getUnConfirmedTransactions() {
-//     const that = this
-//     let {accountPublicKey, currentXEM1, accountAddress, node, transactionType} = this
-//     const publicAccount = PublicAccount.createFromPublicKey(accountPublicKey, this.getWallet.networkType)
-//     await new TransactionApiRxjs().unconfirmedTransactions(
-//         publicAccount,
-//         {
-//             pageSize: 100
-//         },
-//         node,
-//     ).subscribe(async (transactionsInfo) => {
-//         let transferTransactionList = formatTransactions(transactionsInfo, accountAddress, currentXEM1)
-//         // get transaction by choose recript tx or send
-//         if (transactionType == TransferType.RECEIVED) {
-//             transferTransactionList.forEach((item) => {
-//                 if (item.isReceipt) {
-//                     that.localUnConfirmedTransactions.push(item)
-//                 }
-//             })
-//             that.getRelativeMosaicByTransaction(that.localConfirmedTransactions, node)
-//             that.onCurrentMonthChange()
-//             that.isLoadingTransactionRecord = false
-//             return
-//         }
-//         transferTransactionList.forEach((item) => {
-//             if (!item.isReceipt) {
-//                 that.localUnConfirmedTransactions.push(item)
-//             }
-//         })
-//         that.onCurrentMonthChange()
-//         that.isLoadingTransactionRecord = false
-//     })
-// }

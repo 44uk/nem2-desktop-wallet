@@ -19,7 +19,6 @@ export class CollectionRecordTs extends Vue {
     isShowSearchDetail = false
     currentMonthLast: any = 0
     currentMonthFirst: number = 0
-    unConfirmedTransactionList = [] // @TODO unconfirmed transactions
     currentMonth: string = ''
     transactionDetails: any = []
     TransferType = TransferType
@@ -46,11 +45,16 @@ export class CollectionRecordTs extends Vue {
     get slicedConfirmedTransactionList() {
         const {currentMonthFirst, currentMonthLast, confirmedTransactionList} = this
         const filteredByDate = [...confirmedTransactionList]
-        .filter(item => (item.date <= currentMonthLast && item.date >= currentMonthFirst))
+            .filter(item => (!item.isTxUnconfirmed
+                && item.date <= currentMonthLast && item.date >= currentMonthFirst))
         if (!filteredByDate.length) return []
         return this.transactionType === TransferType.SENT
             ? filteredByDate.filter(({tag}) => tag === 'payment')
             : filteredByDate.filter(({tag}) => tag !== 'payment')
+    }
+
+    get unConfirmedTransactionList() {
+        return [...this.confirmedTransactionList].filter(({isTxUnconfirmed}) => isTxUnconfirmed)
     }
 
     changeCurrentMonth(e) {

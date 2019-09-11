@@ -21,7 +21,7 @@
 
     <div class="top_title">
       <span>{{transactionType === TransferType.RECEIVED
-          ? $t('collection_record') : $t('transfer_record')}}</span>
+          ? $t('collection_record') : $t('transfer_sent')}}</span>
       <div class="right" v-show="!isShowSearchDetail">
             <span class="select_date pointer">
               <div class="month_value">
@@ -52,7 +52,7 @@
       <Spin v-if="transactionsLoading" size="large" fix />
       <div
         v-for="(c, index) in unConfirmedTransactionList"
-        :key="index"
+        :key="`${index}ucf`"
         class="transaction_record_item pointer"
         @click="showDialog(c)"
       >
@@ -73,7 +73,7 @@
 
       <div
         v-for="(c, index) in slicedConfirmedTransactionList"
-        :key="index"
+        :key="`${index}cf`"
         class="transaction_record_item pointer"
         @click="showDialog(c)"
       >

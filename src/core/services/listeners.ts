@@ -14,8 +14,6 @@ export class ChainListeners {
         this.node = endpoint.replace('http', 'ws')
     }
 
-    confirmedTxList: any = []
-    unconfirmedTxList: any = []
     errorTxList: any = []
     unconfirmedTxListener: Listener
     confirmedTxListener: Listener
@@ -50,8 +48,8 @@ export class ChainListeners {
 
     unconfirmedListener(): void {
         this.unconfirmedTxListener && this.unconfirmedTxListener.close()
-        const {unconfirmedTxList} = this
         const that = this.app
+        const receivedTransactionMessage = that.$t('Transaction_sending')
         this.unconfirmedTxListener = new Listener(this.node, WebSocket)
         this.unconfirmedTxListener
             .open()
@@ -60,13 +58,21 @@ export class ChainListeners {
                     .unconfirmedAdded(Address.createFromRawAddress(this.address))
                     .pipe(filter((transaction: any) => transaction.transactionInfo !== undefined))
                     .subscribe(transaction => {
-                        if (!unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
-                            unconfirmedTxList.push(transaction.transactionInfo.hash)
-                            that.$Notice.success({
-                                title: that.$t('Transaction_sending').toString(),
-                                duration: 20,
-                            })
-                        }
+                        formatAndSave(
+                            that.$store.getters.mosaicList,
+                            {...transaction, isTxUnconfirmed: true},
+                            that.$store.getters.wallet.address,
+                            that.$store.getters.currentXEM1,
+                            that.$store.getters.xemDivisibility,
+                            that.$store.getters.node,
+                            that.$store.getters.currentXem,
+                            that.$store,
+                        )
+
+                        that.$Notice.success({
+                            title: receivedTransactionMessage, // quickfix
+                            duration: 20,
+                        })
                     })
             })
 
@@ -74,7 +80,6 @@ export class ChainListeners {
 
     confirmedListener(): void {
         this.confirmedTxListener && this.confirmedTxListener.close()
-        const {confirmedTxList, unconfirmedTxList} = this
         const that = this.app
         const receivedTransactionMessage = that.$t('Transaction_Reception')
         this.confirmedTxListener = new Listener(this.node, WebSocket)
@@ -85,28 +90,22 @@ export class ChainListeners {
                     .confirmed(Address.createFromRawAddress(this.address))
                     .pipe(filter((transaction: any) => transaction.transactionInfo !== undefined))
                     .subscribe((transaction) => {
-                        if (!confirmedTxList.includes(transaction.transactionInfo.hash)) {
-                            confirmedTxList.push(transaction.transactionInfo.hash)
-                            if (unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
-                                unconfirmedTxList.splice(confirmedTxList.indexOf(transaction.transactionInfo.hash), 1)
-                            }
-                            formatAndSave(
-                                that.$store.getters.mosaicList,
-                                transaction,
-                                that.$store.getters.wallet.address,
-                                that.$store.getters.currentXEM1,
-                                that.$store.getters.xemDivisibility,
-                                that.$store.getters.node,
-                                that.$store.getters.currentXem,
-                                that.$store,
-                            )
-                            
-                            that.$Notice.destroy()
-                            that.$Notice.success({
-                                title: receivedTransactionMessage, // quickfix
-                                duration: 4,
-                            })
-                        }
+                        formatAndSave(
+                            that.$store.getters.mosaicList,
+                            transaction,
+                            that.$store.getters.wallet.address,
+                            that.$store.getters.currentXEM1,
+                            that.$store.getters.xemDivisibility,
+                            that.$store.getters.node,
+                            that.$store.getters.currentXem,
+                            that.$store,
+                        )
+                        
+                        that.$Notice.destroy()
+                        that.$Notice.success({
+                            title: receivedTransactionMessage, // quickfix
+                            duration: 4,
+                        })
                     })
             })
 

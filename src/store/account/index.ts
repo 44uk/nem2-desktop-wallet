@@ -1,4 +1,4 @@
-import {Account} from 'nem2-sdk'
+import {Account, TransactionType} from 'nem2-sdk'
 import {nodeConfig} from "@/config/index.ts"
 
 declare interface account {
@@ -97,13 +97,34 @@ export default {
         SET_TRANSACTION_LIST(state: account, list: any[]) {
             state.transactionList = list
         },
-        UPDATE_TRANSACTION_LIST(state: account, list: any) {
+        ADD_UNCONFIRMED_TRANSACTION(state: account, list: any) {
             if (list.transferTransactionList.length) {
                 state.transactionList.transferTransactionList.unshift(list.transferTransactionList[0])
             } 
             if (list.receiptList.length) {
                 state.transactionList.receiptList.unshift(list.receiptList[0])
             } 
+        },
+        ADD_CONFIRMED_TRANSACTION(state: account, tx: any) {
+            // @TODO merge or separate these 2 lists in different objects
+            const newTx = tx.transferTransactionList.length ? tx.transferTransactionList[0] : tx.receiptList[0]
+            const listName = newTx.type === TransactionType.TRANSFER ? 'transferTransactionList' : 'receiptList' 
+            const otherListName = newTx.type !== TransactionType.TRANSFER ? 'transferTransactionList' : 'receiptList'
+
+            const stateTransactions = {...state.transactionList}
+            const txFromStore = stateTransactions[listName]
+
+            const txIndex = txFromStore.findIndex(({transactionInfo}) => newTx.transactionInfo.hash === transactionInfo.hash)
+            if(txIndex > -1 && txFromStore[txIndex].isTxUnconfirmed) txFromStore.splice(txIndex, 1)
+            
+            txFromStore.push(newTx)
+
+            const newTransactionList = {
+                [listName]: txFromStore,
+                [otherListName]: [...state.transactionList[otherListName]]
+            }
+
+            state.transactionList = newTransactionList
         },
         SET_CURRENT_XEM(state: account, currentXem: string) {
             state.currentXem = currentXem
