@@ -105,7 +105,6 @@
 
         // @TODO: move out from there
         async setWalletsList() {
-
             const walletListFromStorage: any = localRead('wallets') !== '' ? JSON.parse(localRead('wallets')) : false
             if (!walletListFromStorage || !walletListFromStorage.length) return
             AppWallet.switchWallet(walletListFromStorage[0].address, walletListFromStorage, this.$store)
@@ -127,7 +126,7 @@
                     setTransactionList(newWallet.address, this)
                 ])
                 this.$store.commit('SET_NAMESPACE', res[1] || [])
-                await augmentMosaics(this)
+                augmentMosaics(this)
                  new AppWallet(newWallet).setMultisigStatus(this.node, this.$store)
 
                 if (!this.chainListeners) {
@@ -142,6 +141,11 @@
             }
         }
 
+
+        // @TODO: integrate getBlockInfoByTransactionList
+        /**
+         * Add namespaces and divisibility to transactions and balances
+         */
         async mounted() {
             /**
              * On app initialisation
@@ -151,14 +155,18 @@
                 this.$store.commit('SET_BALANCE_LOADING', true),
                 this.$store.commit('SET_MOSAICS_LOADING', true),
             ])
+
             this.$Notice.config({ duration: 4 })
             getMarketOpenPrice(this)
             const {node} = this  
             await getNetworkGenerationHash(node, this)
-            await getCurrentNetworkMosaic(node, this)
+            await getCurrentNetworkMosaic(node, this.$store)
             await this.setWalletsList()
-            if (this.wallet && this.wallet.address) this.onWalletChange(this.wallet)
 
+            if (this.wallet && this.wallet.address) {
+            this.onWalletChange(this.wallet)
+
+            } 
             /**
              * START EVENTS LISTENERS
              */
@@ -198,7 +206,7 @@
                             try {
                                 await getNetworkGenerationHash(node, this)
                                 // @TODO: Handle generationHash change
-                                await getCurrentNetworkMosaic(node, this)
+                                await getCurrentNetworkMosaic(node, this.$store)
                                 this.chainListeners = new ChainListeners(this, this.wallet.address, node)
                                 this.chainListeners.start()
                             } catch (error) {

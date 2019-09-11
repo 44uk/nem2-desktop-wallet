@@ -31,19 +31,19 @@ export const AppMosaics = () => ({
     store: null,
 
     init(mosaicsFromStore: any) {
-        this.mosaics = mosaicsFromStore
+        this.mosaics = {...mosaicsFromStore}
     },
 
     getItems() {
-      return this.mosaics
+        return this.mosaics
     },
 
     storeItems() {
-    this.store.commit('SET_MOSAICS', this.mosaics)
+        this.store.commit('SET_MOSAICS', this.mosaics)
     },
 
     reset(store: any) {
-      store.commit('SET_MOSAICS', {})
+        store.commit('SET_MOSAICS', {})
     },
 
     addItem(mosaic) {
