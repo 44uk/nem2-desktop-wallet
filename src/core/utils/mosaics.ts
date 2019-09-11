@@ -111,7 +111,7 @@ export const AppMosaics = () => ({
         })
     },
     
-    // @TODO: pull out from here
+    // @TODO: refactor, pull out from here, rename 
     augmentTransactionsMosaics(transactions: any, store: any) {
       return new Promise(async (resolve, reject) => {
           try {
@@ -144,4 +144,35 @@ export const AppMosaics = () => ({
         }
     })
   },
+
+  // @TODO: refactor, pull out from here, rename 
+  augmentNewTransactionsMosaics(transactions, store) {
+      try {
+        const augmentedTransactionList = transactions.transferTransactionList
+        .map(tx => {return {...tx, mosaics: tx.mosaics
+        .map(mosaic => {
+            const newMosaic = this.mosaics[mosaic.id.toHex()]
+            if(!newMosaic) return mosaic
+            return {...mosaic, ...newMosaic}
+        })}})
+        .map(tx => {
+          return tx.mosaics.length === 1 && tx.mosaics[0] && tx.mosaics[0].mosaicInfo 
+          ? {
+              ...tx,
+              infoThird: getRelativeMosaicAmount(
+                  tx.mosaics[0].amount.compact(),
+                  tx.mosaics[0].mosaicInfo.divisibility,
+              )
+          }
+          : tx
+        })
+
+        store.commit('UPDATE_TRANSACTION_LIST', {
+            transferTransactionList: augmentedTransactionList,
+            receiptList: transactions.receiptList,
+        })
+    } catch (error) {
+        console.error(error)
+    }
+  }
 })

@@ -41,6 +41,24 @@ export default {
         wallet(state) {
             return state.wallet
         },
+        currentXEM1(state) {
+            return state.currentXEM1
+        },
+        xemDivisibility(state) {
+            return state.xemDivisibility
+        },
+        node(state) {
+            return state.node
+        },
+        currentXem(state) {
+            return state.currentXem
+        },
+        mosaicList(state) {
+            return state.mosaicList
+        },
+        transactions(state) {
+            return state.transactionList
+        }
     },
     mutations: {
         SET_ACCOUNT(state: account, account: Account): void {
@@ -79,11 +97,17 @@ export default {
         SET_TRANSACTION_LIST(state: account, list: any[]) {
             state.transactionList = list
         },
-        UPDATE_TRANSACTION_LIST(state: account, transaction: any) {
-            state.transactionList.push(transaction)
+        UPDATE_TRANSACTION_LIST(state: account, list: any) {
+            if (list.transferTransactionList.length) {
+                state.transactionList.transferTransactionList.unshift(list.transferTransactionList)
+            } 
+            if (list.receiptList.length) {
+                state.transactionList.receiptList.unshift(list.receiptList)
+            } 
         },
         SET_CURRENT_XEM(state: account, currentXem: string) {
             state.currentXem = currentXem
         }
     },
 }
+ 

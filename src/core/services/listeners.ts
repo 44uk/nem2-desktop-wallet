@@ -1,5 +1,7 @@
 import {Address, Listener} from "nem2-sdk";
 import {filter} from 'rxjs/operators'
+import {transactionFormat} from '@/core/utils/format.ts'
+import {formatAndSave} from '@/core/services/transactions'
 
 export class ChainListeners {
     private readonly app: any
@@ -50,19 +52,21 @@ export class ChainListeners {
     unconfirmedListener(): void {
         this.unconfirmedTxListener && this.unconfirmedTxListener.close()
         const {unconfirmedTxList} = this
-        const notice = this.app.$Notice
+        const that = this.app
         this.unconfirmedTxListener = new Listener(this.node, WebSocket)
         this.unconfirmedTxListener
             .open()
             .then(() => {
                 this.unconfirmedTxListener
-                    .confirmed(Address.createFromRawAddress(this.address))
+                    .unconfirmedAdded(Address.createFromRawAddress(this.address))
                     .pipe(filter((transaction: any) => transaction.transactionInfo !== undefined))
                     .subscribe(transaction => {
+                        console.log(that, '9898989898989898', that.$Notice)
+
                         if (!unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
                             unconfirmedTxList.push(transaction.transactionInfo.hash)
-                            notice.success({
-                                title: this.app.$t('Transaction_sending').toString(),
+                            that.$Notice.success({
+                                title: that.$t('Transaction_sending').toString(),
                                 duration: 20,
                             })
                         }
@@ -74,7 +78,7 @@ export class ChainListeners {
     confirmedListener(): void {
         this.confirmedTxListener && this.confirmedTxListener.close()
         const {confirmedTxList, unconfirmedTxList} = this
-        const notice = this.app.$Notice
+        const that = this.app
         this.confirmedTxListener = new Listener(this.node, WebSocket)
         this.confirmedTxListener
             .open()
@@ -82,15 +86,28 @@ export class ChainListeners {
                 this.confirmedTxListener
                     .confirmed(Address.createFromRawAddress(this.address))
                     .pipe(filter((transaction: any) => transaction.transactionInfo !== undefined))
-                    .subscribe(transaction => {
+                    .subscribe((transaction) => {
                         if (!confirmedTxList.includes(transaction.transactionInfo.hash)) {
                             confirmedTxList.push(transaction.transactionInfo.hash)
                             if (unconfirmedTxList.includes(transaction.transactionInfo.hash)) {
                                 unconfirmedTxList.splice(confirmedTxList.indexOf(transaction.transactionInfo.hash), 1)
                             }
-                            notice.destroy()
-                            notice.success({
-                                title: this.app.$t('Transaction_Reception').toString(),
+                            console.log('that.store',that.$store )
+                            // @TODO: using $store like that is a quickfix
+                            formatAndSave(
+                                that.$store.getters.mosaicList,
+                                transaction,
+                                that.$store.getters.wallet.address,
+                                that.$store.getters.currentXEM1,
+                                that.$store.getters.xemDivisibility,
+                                that.$store.getters.node,
+                                that.$store.getters.currentXem,
+                                that.$store,
+                            )
+
+                            that.$Notice.destroy()
+                            that.$Notice.success({
+                                title: that.$t('Transaction_Reception').toString(),
                                 duration: 4,
                             })
                         }
@@ -102,8 +119,7 @@ export class ChainListeners {
     txErrorListener(): void {
         this.txStatusListener && this.txStatusListener.close()
         const {errorTxList} = this
-        const store = this.app.$store
-        const notice = this.app.$Notice
+        const {$Notice, $store} = this.app
         this.txStatusListener = new Listener(this.node, WebSocket)
         this.txStatusListener
             .open()
@@ -113,9 +129,9 @@ export class ChainListeners {
                     .subscribe(transaction => {
                         if (!errorTxList.includes(transaction.hash)) {
                             errorTxList.push(transaction.hash)
-                            store.commit('SET_ERROR_TEXT', errorTxList)
-                            notice.destroy()
-                            notice.error({
+                            $store.commit('SET_ERROR_TEXT', errorTxList)
+                            $Notice.destroy()
+                            $Notice.error({
                                 title: transaction.status.split('_').join(' '),
                                 duration: 10,
                             })

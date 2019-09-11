@@ -157,8 +157,9 @@
             ])
 
             this.$Notice.config({ duration: 4 })
+            const {node} = this
+
             getMarketOpenPrice(this)
-            const {node} = this  
             await getNetworkGenerationHash(node, this)
             await getCurrentNetworkMosaic(node, this.$store)
             await this.setWalletsList()
