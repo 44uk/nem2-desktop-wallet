@@ -83,6 +83,13 @@ export class MosaicListTs extends Vue {
         return namespaceMap
     }
 
+    get filteredMosaics() {
+        const mosaics: any = Object.values(this.mosaics)
+        return [...mosaics].filter(mosaic => (
+            mosaic.mosaicInfo.owner.publicKey === this.accountPublicKey
+        ))
+    }
+
     showCheckDialog() {
         this.showCheckPWDialog = true
     }
@@ -129,13 +136,6 @@ export class MosaicListTs extends Vue {
 
     closeMosaicEditDialog(item) {
         this.showMosaicEditDialog = false
-    }
-
-    get filteredMosaics() {
-        const mosaics: any = Object.values(this.mosaics)
-        return [...mosaics].filter(mosaic => (
-            mosaic.mosaicInfo.owner.publicKey === this.accountPublicKey
-        ))
     }
 
     computeDuration(item) {

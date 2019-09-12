@@ -52,6 +52,10 @@ export class CollectionRecordTs extends Vue {
             ? filteredByDate.filter(({tag}) => tag === 'payment')
             : filteredByDate.filter(({tag}) => tag !== 'payment')
     }
+    
+    get currentHeight() {
+        return this.app.chainStatus.currentHeight
+    }
 
     get unConfirmedTransactionList() {
         return [...this.confirmedTransactionList].filter(({isTxUnconfirmed}) => isTxUnconfirmed)

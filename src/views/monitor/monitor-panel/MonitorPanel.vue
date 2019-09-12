@@ -52,20 +52,28 @@
 
           <!--        sevral      -->
           <div v-if="isShowManageMosaicIcon" class="searchMosaic secondary_page_animate">
-            <div class="asset_setting_tit pointer" @click="showMosaicMap">
-              <img src="@/common/img/monitor/monitorLeftArrow.png" alt="">
-              <span>{{$t('asset_setting')}}</span>
-            </div>
+            <!--            <div class="asset_setting_tit pointer" @click="showMosaicMap">-->
+
+            <!--              <span>{{$t('asset_setting')}}</span>-->
+            <!--            </div>-->
+            <img src="@/common/img/monitor/monitorLeftArrow.png" alt="">
             <div class="input_outter">
+
               <img src="@/common/img/monitor/monitorSearchIcon.png" alt="">
               <input v-model="mosaicName" type="text" :placeholder="$t('search_for_asset_name')">
               <span class="search pointer" @click="searchMosaic">{{$t('search')}}</span>
 
             </div>
             <div class="mosaicList">
-                <div class="toggle_all_checked " @click="toggleAllChecked()">
-                  <div class="choose true"></div>
-                  {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
+                <div class="toggle_all_checked ">
+                  <span @click="toggleAllChecked()">
+                    <div class="choose true"></div>
+                    {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
+                  </span>
+                  <span @click="isShowExpiredMosaic = !isShowExpiredMosaic">
+                    <div class="choose true"></div>
+                    {{ isShowExpiredMosaic ? $t('Hide_expired_mosaic'):$t('Display_expired_mosaic')}}
+                  </span>
                 </div>
               <div
                   :class="['mosaic_data',index == 0?'padding_top_0':'']"

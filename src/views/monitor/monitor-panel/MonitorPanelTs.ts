@@ -19,10 +19,11 @@ export class MonitorPanelTs extends Vue {
     activeAccount: any
     mosaic: string
     mosaicName = ''
+    isShowExpiredMosaic = false
     isShowAccountInfo = true
     // isShowAccountAlias = false @TODO: Account Alias (update when method available)
     isShowManageMosaicIcon = false
-    ischecked=true
+    ischecked = true
     monitorSeleted = monitorSeleted
     monitorUnselected = monitorUnselected
     navigatorList: any = minitorPanelNavigatorList
@@ -86,7 +87,10 @@ export class MonitorPanelTs extends Vue {
         ))
     }
 
-    // @TODO: review
+    get currentHeight() {
+        return this.app.chainStatus.currentHeight
+    }
+
     switchPanel(index) {
         if (this.navigatorList[index].disabled) {
             return
