@@ -1,5 +1,5 @@
 import {AccountHttp, Address, MosaicAmountView, MosaicService, MosaicHttp, MosaicId} from 'nem2-sdk'
-import {AppMosaics} from '@/core/utils/mosaics'
+import {AppMosaics} from '@/core/services/mosaics'
 import {of} from 'rxjs'
 import {map, mergeMap} from 'rxjs/operators'
 import {AppWallet} from '@/core/utils/wallet.ts'
@@ -39,8 +39,7 @@ export const mosaicsAmountViewFromAddress = (node: string, address: Address): Pr
   })
 }
 
-
-export const augmentMosaics = (that) => {
+export const enrichMosaics = (that) => {
   return new Promise(async (resolve, reject) => {
       try {
           const appMosaics = AppMosaics()

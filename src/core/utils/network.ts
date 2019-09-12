@@ -2,8 +2,7 @@ import {QueryParams, TransactionType, MosaicAlias} from "nem2-sdk"
 import {BlockApiRxjs} from '@/core/api/BlockApiRxjs.ts'
 import {Message} from "@/config/index.ts"
 import {NamespaceApiRxjs} from '../api/NamespaceApiRxjs'
-import {map} from 'rxjs/operators'
-import {AppMosaics} from '@/core/utils/mosaics'
+import {AppMosaics} from '@/core/services/mosaics/appMosaics'
 
 export const getNetworkGenerationHash = async (node: string, that: any): Promise<void> => {
   try {

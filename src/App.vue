@@ -25,10 +25,9 @@
     import {ChainListeners} from '@/core/services/listeners.ts'
     import {getNetworkGenerationHash, getCurrentNetworkMosaic} from '@/core/utils/network.ts'
     import {aliasType} from '@/config/index.ts'
-    import {AppMosaics} from '@/core/utils/mosaics.ts'
-    import {mosaicsAmountViewFromAddress, initMosaic, augmentMosaics} from '@/core/services/mosaics.ts'
+    import {mosaicsAmountViewFromAddress, initMosaic, enrichMosaics, AppMosaics} from '@/core/services/mosaics'
     import {getMarketOpenPrice} from '@/core/services/marketData.ts'
-    import {setTransactionList} from '@/core/services/transactions.ts'
+    import {setTransactionList} from '@/core/services/transactions'
 
     @Component({
         computed: {
@@ -126,9 +125,10 @@
                     getNamespaces(newWallet.address, this.node),
                     setTransactionList(newWallet.address, this)
                 ])
+
                 this.$store.commit('SET_NAMESPACE', res[1] || [])
-                augmentMosaics(this)
-                 new AppWallet(newWallet).setMultisigStatus(this.node, this.$store)
+                enrichMosaics(this)
+                new AppWallet(newWallet).setMultisigStatus(this.node, this.$store)
 
                 if (!this.chainListeners) {
                     this.chainListeners = new ChainListeners(this, newWallet.address, this.node)

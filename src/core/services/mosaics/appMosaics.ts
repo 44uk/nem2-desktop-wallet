@@ -4,26 +4,26 @@ import { MosaicAlias, MosaicId, UInt64, PublicAccount,
 import {getRelativeMosaicAmount} from '@/core/utils/utils.ts'
 
 class AppMosaic {
- amount: any
- constructor(appMosaic?: {
-  hex: string,
-  balance: number | false,
-  name: string | false,
-  amount: any,
-  metaId: string | false, 
-  mosaicId: MosaicId | false, 
-  supply: UInt64 | false, 
-  height: UInt64 | false, 
-  owner: PublicAccount | false, 
-  revision: number | false, 
-  properties: MosaicProperties | false,
-}) {
-  Object.assign(this, appMosaic)
-  delete this.amount
- }
- get() {
-  return this
- }
+  amount: any
+  constructor(appMosaic?: {
+      hex: string,
+      balance: number | false,
+      name: string | false,
+      amount: any,
+      metaId: string | false, 
+      mosaicId: MosaicId | false, 
+      supply: UInt64 | false, 
+      height: UInt64 | false, 
+      owner: PublicAccount | false, 
+      revision: number | false, 
+      properties: MosaicProperties | false,
+  }) {
+      Object.assign(this, appMosaic)
+      delete this.amount
+  }
+  get() {
+      return this
+  }
 }
 
 export const AppMosaics = () => ({
@@ -76,12 +76,12 @@ export const AppMosaics = () => ({
     fromNamespaces(namespaces: any, store: any) {
         this.store = store
         const items = namespaces
-          .filter(({alias}) => alias instanceof MosaicAlias)
-          .map(namespace => ({
-            hex: new MosaicId(namespace.alias.mosaicId).toHex(),
-            name: namespace.name,
-          }))
-          this.addItems(items)
+            .filter(({alias}) => alias instanceof MosaicAlias)
+            .map(namespace => ({
+                hex: new MosaicId(namespace.alias.mosaicId).toHex(),
+                name: namespace.name,
+            }))
+            this.addItems(items)
     },
 
     fromMosaicAmountView(mosaic: MosaicAmountView, store: any) {
@@ -90,8 +90,8 @@ export const AppMosaics = () => ({
               ...mosaic,
               hex: mosaic.mosaicInfo.mosaicId.toHex(),
               balance: getRelativeMosaicAmount(
-                mosaic.amount.compact(),
-                mosaic.mosaicInfo.divisibility,
+                  mosaic.amount.compact(),
+                  mosaic.mosaicInfo.divisibility,
               ),
               show: true,
               showInManage: true,
@@ -135,8 +135,8 @@ export const AppMosaics = () => ({
             })
 
             await store.commit('SET_TRANSACTION_LIST', {
-              transferTransactionList: augmentedTransactionList,
-              receiptList: transactions.receiptList,
+                transferTransactionList: augmentedTransactionList,
+                receiptList: transactions.receiptList,
             })
             resolve(true)
         } catch (error) {
@@ -169,15 +169,15 @@ export const AppMosaics = () => ({
 
         if(isTxUnconfirmed) {
           store.commit('ADD_UNCONFIRMED_TRANSACTION', {
-            transferTransactionList: augmentedTransactionList,
-            receiptList: transactions.receiptList,
+              transferTransactionList: augmentedTransactionList,
+              receiptList: transactions.receiptList,
           })
           return
         }
 
         store.commit('ADD_CONFIRMED_TRANSACTION', {
-          transferTransactionList: augmentedTransactionList,
-          receiptList: transactions.receiptList,
+            transferTransactionList: augmentedTransactionList,
+            receiptList: transactions.receiptList,
         })
 
     } catch (error) {
