@@ -56,7 +56,7 @@
 
             <!--              <span>{{$t('asset_setting')}}</span>-->
             <!--            </div>-->
-            <img src="@/common/img/monitor/monitorLeftArrow.png" alt="">
+            <img src="@/common/img/monitor/monitorLeftArrow.png" @click="showMosaicMap" alt="">
             <div class="input_outter">
 
               <img src="@/common/img/monitor/monitorSearchIcon.png" alt="">
@@ -67,12 +67,12 @@
             <div class="mosaicList">
                 <div class="toggle_all_checked ">
                   <span @click="toggleAllChecked()">
-                    <div class="choose true"></div>
+                    <div :class="['choose',  ischecked ? 'true' : 'false']"></div>
                     {{ !ischecked ? $t('select_all'):$t('all_unchecked')}}
                   </span>
-                  <span @click="isShowExpiredMosaic = !isShowExpiredMosaic">
-                    <div class="choose true"></div>
-                    {{ isShowExpiredMosaic ? $t('Hide_expired_mosaic'):$t('Display_expired_mosaic')}}
+                  <span @click="toggleShowExpired()">
+                    <div :class="['choose',  showExpiredMosaics ? 'true' : 'false']"></div>
+                    {{ showExpiredMosaics ? $t('Hide_expired_mosaic'):$t('Display_expired_mosaic')}}
                   </span>
                 </div>
               <div

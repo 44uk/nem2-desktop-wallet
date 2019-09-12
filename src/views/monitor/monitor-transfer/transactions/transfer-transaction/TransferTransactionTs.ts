@@ -66,14 +66,20 @@ export default class TransferTransactionTs extends Vue {
         return this.activeAccount.mosaics
     }
 
+    get currentHeight() {
+        return this.app.chainStatus.currentHeight
+    }
+
     get mosaicList() {
         // @TODO: would be better to return a loading indicator
         // instead of an empty array ([] = "no matching data" in the select dropdown)
-        const {mosaics} = this
+        const {mosaics, currentHeight} = this
         if (this.mosaicsLoading || !mosaics) return []
         
         const mosaicList: any = Object.values(this.mosaics)
-        return [...mosaicList].map(({name, balance, hex}) => ({
+        return [...mosaicList]
+        .filter(({expirationHeight}) => expirationHeight === 'Forever' || currentHeight < expirationHeight)
+        .map(({name, balance, hex}) => ({
             label: `${name||hex} (${balance.toLocaleString()})`,
             value: hex,
         }))

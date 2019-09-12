@@ -86,4 +86,4 @@ export const initMosaic = (wallet, that) => {
             reject(error)   
         }
     })
-  }
+}

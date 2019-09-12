@@ -1,26 +1,29 @@
-import { MosaicAlias, MosaicId, UInt64, PublicAccount,
-  MosaicProperties, MosaicAmountView, MosaicDefinitionTransaction,
+import { MosaicAlias, MosaicId, UInt64, MosaicAmountView, MosaicDefinitionTransaction, MosaicInfo,
 } from 'nem2-sdk'
 import {getRelativeMosaicAmount} from '@/core/utils/utils.ts'
 
 class AppMosaic {
-  amount: any
-  constructor(appMosaic?: {
-      hex: string,
-      balance: number | false,
-      name: string | false,
-      amount: any,
-      metaId: string | false, 
-      mosaicId: MosaicId | false, 
-      supply: UInt64 | false, 
-      height: UInt64 | false, 
-      owner: PublicAccount | false, 
-      revision: number | false, 
-      properties: MosaicProperties | false,
+    amount: any
+    expirationHeight: number | 'Forever'
+    height: UInt64
+    mosaicInfo: MosaicInfo
+
+    constructor(appMosaic?: {
+        hex: string,
+        balance?: number,
+        name?: string,
+        amount?: any,
+        mosaicInfo?: MosaicInfo,
   }) {
-      Object.assign(this, appMosaic)
-      delete this.amount
+        Object.assign(this, appMosaic)
+        delete this.amount
+        if (this.mosaicInfo) {
+            const duration = this.mosaicInfo.duration.compact()
+            this.expirationHeight = duration === 0
+                ? 'Forever' : this.mosaicInfo.height.compact() + duration
+        }
   }
+
   get() {
       return this
   }

@@ -19,7 +19,7 @@ export class MonitorPanelTs extends Vue {
     activeAccount: any
     mosaic: string
     mosaicName = ''
-    isShowExpiredMosaic = false
+    showExpiredMosaics = false
     isShowAccountInfo = true
     // isShowAccountAlias = false @TODO: Account Alias (update when method available)
     isShowManageMosaicIcon = false
@@ -129,6 +129,19 @@ export class MonitorPanelTs extends Vue {
         this.ischecked = !this.ischecked
         const updatedList: any = {...this.mosaicMap}
         Object.keys(updatedList).forEach(key=>updatedList[key].show = this.ischecked)        
+    }
+
+    toggleShowExpired(){
+        this.showExpiredMosaics = !this.showExpiredMosaics
+        const updatedList: any = {...this.mosaicMap}
+        const {currentHeight} = this
+        Object.keys(updatedList)
+            .forEach(key=>  {
+                const {expirationHeight} = updatedList[key]
+                updatedList[key].show = this.showExpiredMosaics
+                    ? true 
+                    : expirationHeight === 'Forever' || currentHeight < expirationHeight
+            })
     }
 
     showMosaicMap() {
