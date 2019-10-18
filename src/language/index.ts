@@ -1,6 +1,6 @@
-import {zh_CN} from '@/language/zh-CN.ts'
-import {en_US} from '@/language/en-US.ts'
-import {jp_JP} from '@/language/jp-JP.ts'
+import zh_CN from '@/language/zh-CN.json'
+import en_US from '@/language/en-US.json'
+import jp_JP from '@/language/jp-JP.json'
 import VueI18n from 'vue-i18n'
 import Vue from 'vue'
 
