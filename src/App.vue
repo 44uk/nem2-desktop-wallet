@@ -105,7 +105,7 @@
                 this.$store.commit('SET_ACTIVE_MULTISIG_ACCOUNT', null)
                 this.$store.commit('SET_TRANSACTION_LIST', [])
                 this.$store.commit('RESET_MOSAICS')
-                this.$store.commit('SET_NAMESPACES', [])
+                this.$store.commit('RESET_NAMESPACES')
 
                 //@TODO: move from there
                 const mosaicListFromStorage = localRead(newWallet.address)
@@ -188,7 +188,6 @@
             this.$store.commit('SET_TRANSACTIONS_LOADING', true)
             this.$store.commit('SET_MOSAICS_LOADING', true)
             this.$store.commit('SET_NAMESPACE_LOADING', true)
-            
             try {
                 await Promise.all([
                     getNetworkGenerationHash(this),

@@ -1,7 +1,7 @@
 import {TransactionType} from 'nem2-sdk'
 import {DefaultFee, NetworkCurrency} from '@/core/model'
 
-export const WALLET_VERSION = '0.8.2'
+export const WALLET_VERSION = '0.8.3'
 
 export const isWindows = require('./packge.ts').isWin32
 
@@ -212,6 +212,6 @@ export const networkConfig = {
     seedWalletMaxAmount: 10,
     testMnemonicString: 'this is a test string his is a test string this is',
     EMPTY_LINKED_ACCOUNT_KEY: '0000000000000000000000000000000000000000000000000000000000000000',
-    derivationPathHead:`m/44'/43'/0'/0'`,
+    derivationPathHead:`m/44'/43'/0'/0'/`,
     derivationSeedPath:`m/44'/43'/0'/0'/0'`
 }
