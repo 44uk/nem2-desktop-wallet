@@ -3,6 +3,14 @@ import {FEE_SPEEDS} from '@/config'
 
 
 export const formDataConfig = {
+    importKeystoreConfig: {
+        walletName: 'keystore-wallet',
+        networkType: NetworkType.MIJIN_TEST,
+        keystoreStr: '',
+        walletPassword: '',
+        walletPasswordAgain: '',
+        keystorePassword: ''
+    },
     transferForm: {
         recipient: '',
         remark: '',
@@ -60,13 +68,14 @@ export const formDataConfig = {
         minApproval: 1,
         minRemoval: 1,
         feeSpeed: FEE_SPEEDS.NORMAL,
+        multisigPublicKey: '',
     },
-    multisigManagementForm: {
-        minApprovalDelta: 0,
-        minRemovalDelta: 0,
+    multisigModificationForm: {
+        publicKeyList: [],
+        minApproval: 0,
+        minRemoval: 0,
         feeSpeed: FEE_SPEEDS.NORMAL,
-        cosignerList: [],
-        multisigPublicKey: ''
+        multisigPublicKey: '',
     },
     namespaceEditForm: {
         name: '',
